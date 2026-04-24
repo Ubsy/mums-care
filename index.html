@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Mum's Care Checklist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CONFIG  — replace PANTRY_ID with your own pantry ID
+   Instructions in the README sent alongside this file
+   ============================================================ */
+
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:inherit;}
+  body{font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#fdf6f0 0%,#f7ede2 50%,#f0e6d8 100%);min-height:100vh;padding-bottom:60px;color:#3d4a3e;}
+  h1,h2{font-family:'Lora',serif;font-weight:600;}
+  button,input,textarea{font-family:inherit;cursor:pointer;outline:none;}
+  textarea,input{cursor:text;}
+
+  .hidden{display:none !important;}
+
+  /* Setup / name / error screens */
+  .screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .card{background:#fff;border-radius:24px;padding:38px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 12px 50px rgba(0,0,0,0.1);}
+  .card-icon{font-size:46px;margin-bottom:14px;}
+  .card h2{font-size:22px;color:#3d4a3e;margin-bottom:8px;font-weight:normal;}
+  .card p{color:#888;font-size:13px;margin-bottom:20px;line-height:1.65;}
+  .card ol,.card ul{text-align:left;font-size:13px;color:#555;line-height:1.7;margin:12px 0 20px 22px;}
+  .card code{background:#f5f0eb;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:#5c8a6e;}
+  .btn-primary{display:block;width:100%;padding:13px;background:#5c8a6e;border:none;border-radius:12px;color:#fff;font-size:15px;font-weight:700;transition:background .2s;}
+  .btn-primary:active{background:#4a7a5e;}
+  .btn-primary:disabled{background:#b8c8bc;}
+  .input-field{width:100%;padding:13px 16px;border:1.5px solid #d0c8c0;border-radius:12px;font-size:15px;outline:none;color:#3d4a3e;margin-bottom:14px;}
+  .input-field:focus{border-color:#5c8a6e;}
+  .error-msg{color:#d77070;font-size:13px;margin-top:10px;min-height:18px;}
+
+  /* Header */
+  .header{background:linear-gradient(135deg,#5c8a6e,#4a7a5e);padding:22px 18px 16px;color:#fff;box-shadow:0 4px 20px rgba(76,122,94,.3);}
+  .header-inner{max-width:600px;margin:0 auto;}
+  .header-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .header-sub{font-size:10px;letter-spacing:3px;text-transform:uppercase;opacity:.7;margin-bottom:3px;}
+  .header-title{font-family:'Lora',serif;font-size:21px;font-weight:normal;color:#fff;}
+  .header-right{text-align:right;font-size:11px;}
+  .header-right .name{opacity:.85;}
+  .header-right .sync{opacity:.65;margin-top:3px;display:flex;align-items:center;gap:5px;justify-content:flex-end;}
+  .sync-dot{width:6px;height:6px;border-radius:50%;background:#a8d5b5;transition:background .3s;}
+  .sync-dot.saving{background:#ffd700;animation:pulse .8s infinite;}
+  .sync-dot.error{background:#e07070;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .progress-bar-bg{margin-top:12px;background:rgba(255,255,255,.18);border-radius:8px;height:6px;overflow:hidden;}
+  .progress-bar-fill{height:100%;background:#a8d5b5;border-radius:8px;transition:width .4s ease;}
+  .progress-text{margin-top:5px;font-size:12px;opacity:.8;}
+
+  /* Main */
+  .main{max-width:600px;margin:0 auto;padding:0 14px;}
+
+  /* Day selector */
+  .day-selector{display:flex;gap:5px;margin-top:16px;}
+  .day-btn{flex:1;padding:9px 2px;border:none;border-radius:10px;font-size:12px;font-weight:600;transition:all .2s;}
+  .day-btn.active{background:#5c8a6e;color:#fff;box-shadow:0 3px 12px rgba(92,138,110,.35);font-weight:700;}
+  .day-btn.inactive{background:#fff;color:#7a8a7c;box-shadow:0 1px 4px rgba(0,0,0,.07);}
+  .day-full{text-align:center;margin-top:7px;color:#5c8a6e;font-size:13px;letter-spacing:.5px;}
+
+  /* Mode toggle */
+  .mode-toggle{display:flex;margin-top:11px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 6px rgba(0,0,0,.07);}
+  .mode-btn{flex:1;padding:10px;border:none;border-radius:9px;font-size:13px;font-weight:700;transition:all .25s;background:transparent;color:#aaa;}
+  .mode-btn.active-day{background:#f4b942;color:#fff;}
+  .mode-btn.active-night{background:#3d5a80;color:#fff;}
+
+  /* Activity */
+  .activity-feed{margin-top:11px;background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+  .activity-label{font-size:10px;color:#bbb;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+  .activity-row{font-size:12px;color:#666;padding:5px 0;border-bottom:1px solid #f5f0eb;display:flex;gap:8px;align-items:center;}
+  .activity-row:last-child{border-bottom:none;}
+  .activity-row .tick{font-weight:700;}
+  .activity-row .tick-done{color:#5c8a6e;}
+  .activity-row .tick-undone{color:#e07070;}
+  .activity-row strong{color:#3d4a3e;}
+  .activity-time{margin-left:auto;color:#ccc;white-space:nowrap;}
+
+  /* Sections */
+  .section{margin-top:10px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);border:1.5px solid transparent;transition:all .3s;}
+  .section.complete{box-shadow:0 2px 10px rgba(92,138,110,.18);border-color:#a8d5b5;}
+  .section-header{width:100%;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;border:none;cursor:pointer;}
+  .section-header.bg-normal{background:#f9f4ef;}
+  .section-header.bg-done{background:#f0f9f4;}
+  .section-left{display:flex;align-items:center;gap:10px;}
+  .time-badge{color:#fff;border-radius:7px;padding:3px 10px;font-size:12px;font-weight:700;white-space:nowrap;}
+  .section-count{font-size:11px;color:#aaa;}
+  .section-count.done{color:#5c8a6e;}
+  .section-right{display:flex;align-items:center;gap:8px;}
+  .mini-bar-bg{width:48px;height:4px;background:#eee;border-radius:4px;overflow:hidden;}
+  .mini-bar-fill{height:100%;border-radius:4px;transition:width .3s;}
+  .chev{color:#ccc;font-size:10px;}
+  .section-body{padding:6px 16px 14px;}
+
+  /* Task rows */
+  .task-row{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid #f5f0eb;cursor:pointer;transition:opacity .15s;}
+  .task-row:last-child{border-bottom:none;}
+  .checkbox{width:22px;height:22px;border-radius:6px;border:2px solid #d0c8c0;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all .15s;font-size:12px;font-weight:700;color:#fff;}
+  .checkbox.checked{background:#5c8a6e;border-color:#5c8a6e;}
+  .task-content{flex:1;min-width:0;}
+  .task-label{font-size:14px;color:#3d4a3e;transition:all .15s;}
+  .task-label.done{color:#5c8a6e;text-decoration:line-through;}
+  .task-who{font-size:11px;color:#a0b8a8;margin-top:2px;}
+
+  /* Trolley */
+  .trolley-grid{padding:10px 16px 16px;display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .trolley-item{display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .trolley-item .checkbox{width:20px;height:20px;font-size:11px;}
+  .trolley-item-label{font-size:13px;color:#555;}
+  .trolley-item-label.done{color:#5c8a6e;text-decoration:line-through;}
+
+  /* Record */
+  .record-section{margin-top:14px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+  .record-title{font-size:13px;font-weight:700;color:#4a5568;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .record-label{font-size:12px;color:#999;margin-bottom:5px;}
+  .record-textarea{width:100%;border:1.5px solid #e8e0d8;border-radius:8px;padding:9px 12px;font-size:13px;color:#3d4a3e;resize:none;background:#fdf8f4;transition:border-color .2s;}
+  .record-textarea:focus{border-color:#5c8a6e;}
+  .record-hint{font-size:11px;color:#ccc;margin-top:6px;}
+  .record-field{margin-bottom:13px;}
+
+  /* Reset */
+  .reset-btn{display:block;margin:18px auto 0;padding:10px 28px;background:transparent;border:1.5px solid #e0a0a0;border-radius:20px;color:#c08080;font-size:13px;}
+  .footer-note{text-align:center;margin-top:12px;font-size:11px;color:#ccc;}
+
+  .loading{text-align:center;padding:40px 20px;color:#aaa;font-size:14px;}
+</style>
+</head>
+<body>
+
+<!-- ─── SETUP SCREEN (shown if PANTRY_ID not configured) ────────────── -->
+<div id="setupScreen" class="screen hidden">
+  <div class="card" style="text-align:left;">
+    <div style="text-align:center;"><div class="card-icon">⚙️</div></div>
+    <h2 style="text-align:center;">Setup Required</h2>
+    <p style="text-align:center;">This checklist needs to be configured with a free Pantry ID (takes 2 minutes).</p>
+    <ol>
+      <li>Go to <strong>getpantry.cloud</strong></li>
+      <li>Enter your email, click "Create Pantry"</li>
+      <li>Copy the <strong>Pantry ID</strong> it gives you</li>
+      <li>Open this HTML file in a text editor (e.g. Notepad)</li>
+      <li>Find the line: <code>const PANTRY_ID = '17f5db4d-7978-4bbf-8052-45e20a3b4e60';</code></li>
+      <li>Replace <code>17f5db4d-7978-4bbf-8052-45e20a3b4e60</code> with your Pantry ID (keep the quotes)</li>
+      <li>Save the file and re-upload</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ─── NAME ENTRY SCREEN ──────────────────────────────────────────── -->
+<div id="nameScreen" class="screen hidden">
+  <div class="card">
+    <div class="card-icon">💚</div>
+    <h2>Mum's Care Checklist</h2>
+    <p>Everyone using this link shares the same live checklist. Enter your name so others can see who did what.</p>
+    <input id="nameInput" class="input-field" placeholder="Your name (e.g. Sarah)" maxlength="30"/>
+    <button id="nameContinueBtn" class="btn-primary">Open Checklist →</button>
+    <div id="nameError" class="error-msg"></div>
+    <p style="color:#ccc;font-size:11px;margin-top:16px;">No account needed · Works on any device</p>
+  </div>
+</div>
+
+<!-- ─── MAIN APP ───────────────────────────────────────────────────── -->
+<div id="appScreen" class="hidden">
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-top">
+        <div>
+          <div class="header-sub">Shared Live Record</div>
+          <h1 class="header-title">Mum's Care Checklist</h1>
+        </div>
+        <div class="header-right">
+          <div class="name">👤 <span id="userNameDisp"></span></div>
+          <div class="sync"><span id="syncDot" class="sync-dot"></span><span id="syncText">Syncing…</span></div>
+        </div>
+      </div>
+      <div class="progress-bar-bg"><div id="progressBar" class="progress-bar-fill" style="width:0%"></div></div>
+      <div id="progressText" class="progress-text">Loading…</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div id="daySelector" class="day-selector"></div>
+    <div id="dayFull" class="day-full"></div>
+
+    <div class="mode-toggle">
+      <button id="modeDayBtn" class="mode-btn active-day">☀️ Day Shifts</button>
+      <button id="modeNightBtn" class="mode-btn">🌙 Night Shifts</button>
+    </div>
+
+    <div id="activityFeed" class="activity-feed hidden">
+      <div class="activity-label">Recent Activity</div>
+      <div id="activityList"></div>
+    </div>
+
+    <div id="trolleySection" class="section"></div>
+    <div id="slotsContainer"></div>
+
+    <div class="record-section">
+      <div class="record-title"><span>📋</span><span id="recordTitle">Daily Record</span></div>
+      <div class="record-field">
+        <div class="record-label">🍽️ Food eaten</div>
+        <textarea id="recFood" class="record-textarea" rows="2" placeholder="What mum ate today…"></textarea>
+      </div>
+      <div class="record-field">
+        <div class="record-label">💧 Fluids taken</div>
+        <textarea id="recDrink" class="record-textarea" rows="2" placeholder="Amount of water / drinks…"></textarea>
+      </div>
+      <div class="record-field">
+        <div class="record-label">🔄 Nappy contents</div>
+        <textarea id="recNappy" class="record-textarea" rows="2" placeholder="Output notes…"></textarea>
+      </div>
+      <div class="record-hint">Notes auto-save and sync to everyone.</div>
+    </div>
+
+    <button id="resetBtn" class="reset-btn">🗑️ Reset current day/shift — clear all ticks</button>
+    <div class="footer-note">🔄 Auto-syncs every 6 seconds</div>
+  </div>
+</div>
+
+<script>
+//==============================================================
+// CONFIG — replace with your own Pantry ID
+//==============================================================
+const PANTRY_ID = '17f5db4d-7978-4bbf-8052-45e20a3b4e60';
+const BASKET    = 'mum-care-v1';
+
+//==============================================================
+// DATA DEFINITIONS
+//==============================================================
+const DAYS      = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const FULL_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const CARE  = ['Feed mum','Change mum','Offer water','Wipe face & hands','Eyes with cotton pads','Brush teeth','Change position','Exercise'];
+const HOUSE = ['Ironing','Kitchen tidy','Clean fridge','Vacuum','Empty dust bins','Nappy check'];
+
+const DAY_SLOTS = [
+  {time:'9:30 AM', emoji:'🌅', tasks:[...CARE.slice(0,6),...HOUSE,...CARE.slice(6)]},
+  {time:'11:00 AM',emoji:'☀️', tasks:[...CARE]},
+  {time:'1:30 PM', emoji:'🌤️', tasks:[...CARE]},
+  {time:'3:30 PM', emoji:'🌥️', tasks:[...CARE]},
+  {time:'6:00 PM', emoji:'🌆', tasks:[...CARE]},
+];
+const NIGHT_SLOTS = [
+  {time:'9:30 PM', emoji:'🌙', tasks:[...CARE.slice(0,6),...HOUSE,...CARE.slice(6)]},
+  {time:'11:00 PM',emoji:'⭐', tasks:[...CARE,'Aloe Vera cream','E45 itch cream']},
+  {time:'2:00 AM', emoji:'🌌', tasks:[...CARE]},
+  {time:'5:00 AM', emoji:'🌄', tasks:[...CARE]},
+  {time:'7:30 AM', emoji:'🛁', tasks:['Wake up & prepare trolley','Warm water with shower gel','Clean water to rinse','Towel ready','Toothpaste & brush ready','Wash face','Wash neck','Wash hands','Brush teeth','Oil & comb hair','Change pad','Exercise','Aloe Vera cream','E45 itch cream']},
+];
+const TROLLEY = ['Pad','Knickers','Bag','Wipes','Gloves','Cotton pads','Water','Cream','Mat 1','Mat 2'];
+
+//==============================================================
+// STATE
+//==============================================================
+let userName = '';
+let currentDay = 0;
+let currentMode = 'day';
+let data = {};   // entire app data from pantry
+let openSections = {};   // UI: which sections are expanded
+let pollTimer = null;
+let blockPollUntil = 0;  // after local write, block poll from overwriting
+
+//==============================================================
+// PANTRY API
+//==============================================================
+const BASE = `https://getpantry.cloud/apiv1/pantry/${PANTRY_ID}/basket/${BASKET}`;
+
+async function pantryGet() {
+  try {
+    const r = await fetch(BASE, {headers:{'Accept':'application/json'}});
+    if (r.status === 400) return {};  // basket empty / doesn't exist yet
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const text = await r.text();
+    return text ? JSON.parse(text) : {};
+  } catch (e) {
+    console.error('pantryGet error:', e);
+    return null;
+  }
+}
+
+// PUT does a deep merge — preserves other keys, updates specified ones
+async function pantryPut(update) {
+  try {
+    const r = await fetch(BASE, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(update)
+    });
+    return r.ok;
+  } catch (e) {
+    console.error('pantryPut error:', e);
+    return false;
+  }
+}
+
+// POST replaces the entire basket
+async function pantryPost(full) {
+  try {
+    const r = await fetch(BASE, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify(full)
+    });
+    return r.ok;
+  } catch (e) {
+    console.error('pantryPost error:', e);
+    return false;
+  }
+}
+
+async function pantryDelete() {
+  try {
+    await fetch(BASE, {method:'DELETE'});
+    return true;
+  } catch { return false; }
+}
+
+//==============================================================
+// SAVE HELPERS  — set nested value, then PUT deep-merge
+//==============================================================
+function setNested(obj, keys, value) {
+  let cur = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (!cur[keys[i]] || typeof cur[keys[i]] !== 'object') cur[keys[i]] = {};
+    cur = cur[keys[i]];
+  }
+  cur[keys[keys.length-1]] = value;
+  return obj;
+}
+
+function getNested(obj, keys, def) {
+  let cur = obj;
+  for (const k of keys) {
+    if (cur == null || typeof cur !== 'object') return def;
+    cur = cur[k];
+  }
+  return cur === undefined ? def : cur;
+}
+
+function buildUpdate(keys, value) {
+  const update = {};
+  setNested(update, keys, value);
+  return update;
+}
+
+async function setSyncStatus(status) {
+  const dot = document.getElementById('syncDot');
+  const txt = document.getElementById('syncText');
+  dot.className = 'sync-dot' + (status==='saving'?' saving':status==='error'?' error':'');
+  if (status==='saving') txt.textContent = 'Saving…';
+  else if (status==='error') txt.textContent = 'Connection issue';
+  else txt.textContent = `Synced ${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+//==============================================================
+// TICK TASK  (the core operation)
+//==============================================================
+async function toggleTask(time, task) {
+  const day = DAYS[currentDay];
+  const was  = getNested(data,['checks',day,currentMode,time,task],false);
+  const now  = !was;
+  const whenStr = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+  // Update local state immediately
+  setNested(data,['checks',day,currentMode,time,task], now);
+  setNested(data,['who',day,currentMode,time,task], now ? {who:userName, at:whenStr} : null);
+  const log = {who:userName, task, slotTime:time, done:now, at:whenStr, ts:Date.now()};
+  const curActivity = Array.isArray(data.activity) ? data.activity : [];
+  data.activity = [log, ...curActivity].slice(0,20);
+
+  blockPollUntil = Date.now() + 6000;
+  render();
+  setSyncStatus('saving');
+
+  // Build minimal update and PUT
+  const update = {};
+  setNested(update,['checks',day,currentMode,time,task], now);
+  setNested(update,['who',day,currentMode,time,task], now ? {who:userName, at:whenStr} : null);
+  update.activity = data.activity;
+
+  const ok = await pantryPut(update);
+  setSyncStatus(ok ? 'ok' : 'error');
+}
+
+async function toggleTrolley(item) {
+  const day = DAYS[currentDay];
+  const was = getNested(data,['trolley',day,item],false);
+  setNested(data,['trolley',day,item], !was);
+  render();
+  setSyncStatus('saving');
+  const ok = await pantryPut(buildUpdate(['trolley',day,item], !was));
+  setSyncStatus(ok ? 'ok' : 'error');
+}
+
+let recordTimer = null;
+function queueRecordSave(field, value) {
+  const day = DAYS[currentDay];
+  setNested(data,['records',day,field], value);
+  blockPollUntil = Date.now() + 6000;
+  clearTimeout(recordTimer);
+  recordTimer = setTimeout(async () => {
+    setSyncStatus('saving');
+    const ok = await pantryPut(buildUpdate(['records',day,field], value));
+    setSyncStatus(ok ? 'ok' : 'error');
+  }, 1200);
+}
+
+async function resetCurrentDayMode() {
+  const day = DAYS[currentDay];
+  const confirmMsg = `Reset ALL ${currentMode==='day'?'day':'night'} checks for ${FULL_DAYS[currentDay]}?\n\nThis clears ticks for everyone.`;
+  if (!confirm(confirmMsg)) return;
+
+  const slots = currentMode==='day' ? DAY_SLOTS : NIGHT_SLOTS;
+  const emptyChecks = {};
+  const emptyWho    = {};
+  slots.forEach(s => {
+    emptyChecks[s.time] = {};
+    emptyWho[s.time]    = {};
+    s.tasks.forEach(t => { emptyChecks[s.time][t]=false; emptyWho[s.time][t]=null; });
+  });
+
+  // Apply locally
+  if (!data.checks) data.checks={}; if (!data.checks[day]) data.checks[day]={};
+  if (!data.who) data.who={}; if (!data.who[day]) data.who[day]={};
+  data.checks[day][currentMode] = emptyChecks;
+  data.who[day][currentMode]    = emptyWho;
+
+  blockPollUntil = Date.now() + 6000;
+  render();
+  setSyncStatus('saving');
+
+  const update = {};
+  setNested(update,['checks',day,currentMode], emptyChecks);
+  setNested(update,['who',day,currentMode], emptyWho);
+  const ok = await pantryPut(update);
+  setSyncStatus(ok ? 'ok' : 'error');
+}
+
+//==============================================================
+// POLLING
+//==============================================================
+async function pollTick() {
+  const fresh = await pantryGet();
+  if (!fresh) { setSyncStatus('error'); return; }
+
+  // If we recently wrote, only update "non-ownership" areas (records from others, other people's activity)
+  // For simplicity: if block active, skip entirely. Otherwise merge in all remote data.
+  if (Date.now() < blockPollUntil) {
+    setSyncStatus('ok');
+    return;
+  }
+
+  // Preserve local textarea values if user is actively typing
+  const activeEl = document.activeElement;
+  const typingField = activeEl && activeEl.tagName === 'TEXTAREA' ? activeEl.id : null;
+
+  data = fresh || {};
+
+  // Restore the field the user is typing in (so their keystrokes don't get clobbered)
+  if (typingField) {
+    const val = activeEl.value;
+    render();
+    const restored = document.getElementById(typingField);
+    if (restored) { restored.value = val; restored.focus(); }
+  } else {
+    render();
+  }
+  setSyncStatus('ok');
+}
+
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTick();
+  pollTimer = setInterval(pollTick, 6000);
+}
+
+//==============================================================
+// RENDERING
+//==============================================================
+function render() {
+  renderDaySelector();
+  renderModeToggle();
+  renderProgress();
+  renderActivity();
+  renderTrolley();
+  renderSlots();
+  renderRecords();
+  document.getElementById('recordTitle').textContent = `Daily Record — ${FULL_DAYS[currentDay]}`;
+  document.getElementById('resetBtn').textContent = `🗑️ Reset ${FULL_DAYS[currentDay]} ${currentMode==='day'?'day':'night'} — clear all ticks`;
+}
+
+function renderDaySelector() {
+  const el = document.getElementById('daySelector');
+  el.innerHTML = DAYS.map((d,i) => `
+    <button class="day-btn ${i===currentDay?'active':'inactive'}" data-day="${i}">${d}</button>
+  `).join('');
+  el.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => { currentDay = parseInt(b.dataset.day); render(); });
+  });
+  document.getElementById('dayFull').textContent = FULL_DAYS[currentDay];
+}
+
+function renderModeToggle() {
+  const dBtn = document.getElementById('modeDayBtn');
+  const nBtn = document.getElementById('modeNightBtn');
+  dBtn.className = 'mode-btn' + (currentMode==='day' ? ' active-day':'');
+  nBtn.className = 'mode-btn' + (currentMode==='night' ? ' active-night':'');
+}
+
+function renderProgress() {
+  const slots = currentMode==='day' ? DAY_SLOTS : NIGHT_SLOTS;
+  const day = DAYS[currentDay];
+  let done=0,total=0;
+  slots.forEach(s => s.tasks.forEach(t => {
+    total++;
+    if (getNested(data,['checks',day,currentMode,s.time,t],false)) done++;
+  }));
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('progressBar').style.width = pct+'%';
+  document.getElementById('progressText').textContent = `${done} of ${total} tasks complete (${pct}%)`;
+}
+
+function renderActivity() {
+  const acts = (data.activity||[]).slice(0,5);
+  const feed = document.getElementById('activityFeed');
+  if (!acts.length) { feed.classList.add('hidden'); return; }
+  feed.classList.remove('hidden');
+  document.getElementById('activityList').innerHTML = acts.map((a,i) => `
+    <div class="activity-row" style="${i===acts.length-1?'border-bottom:none':''}">
+      <span class="tick ${a.done?'tick-done':'tick-undone'}">${a.done?'✓':'✗'}</span>
+      <span><strong>${escapeHtml(a.who||'Someone')}</strong> ${a.done?'ticked':'unticked'} <em>${escapeHtml(a.task||'')}</em> @ ${escapeHtml(a.slotTime||'')}</span>
+      <span class="activity-time">${escapeHtml(a.at||'')}</span>
+    </div>`).join('');
+}
+
+function renderTrolley() {
+  const day = DAYS[currentDay];
+  const dayTrolley = getNested(data,['trolley',day],{}) || {};
+  const trDone = TROLLEY.filter(i => dayTrolley[i]).length;
+  const isOpen = openSections['trolley']===true;
+
+  document.getElementById('trolleySection').innerHTML = `
+    <button class="section-header bg-normal" id="trolleyHeader">
+      <div class="section-left">
+        <span style="font-size:16px;">🛒</span>
+        <span style="font-weight:700;color:#4a5568;font-size:13px;">Trolley Ready Check</span>
+        <span class="section-count">${trDone}/${TROLLEY.length}</span>
+      </div>
+      <span class="chev">${isOpen?'▲':'▼'}</span>
+    </button>
+    ${isOpen ? `<div class="trolley-grid">${TROLLEY.map(item => {
+      const checked = !!dayTrolley[item];
+      return `<div class="trolley-item" data-trolley="${escapeAttr(item)}">
+        <div class="checkbox ${checked?'checked':''}">${checked?'✓':''}</div>
+        <span class="trolley-item-label ${checked?'done':''}">${escapeHtml(item)}</span>
+      </div>`;
+    }).join('')}</div>` : ''}
+  `;
+
+  document.getElementById('trolleyHeader').addEventListener('click', () => {
+    openSections['trolley'] = !isOpen;
+    render();
+  });
+  if (isOpen) {
+    document.querySelectorAll('#trolleySection [data-trolley]').forEach(el => {
+      el.addEventListener('click', () => toggleTrolley(el.dataset.trolley));
+    });
+  }
+}
+
+function renderSlots() {
+  const slots = currentMode==='day' ? DAY_SLOTS : NIGHT_SLOTS;
+  const day = DAYS[currentDay];
+  const container = document.getElementById('slotsContainer');
+
+  container.innerHTML = slots.map(slot => {
+    const slotChecks = getNested(data,['checks',day,currentMode,slot.time],{}) || {};
+    const slotWho    = getNested(data,['who',day,currentMode,slot.time],{}) || {};
+    const done  = slot.tasks.filter(t => slotChecks[t]).length;
+    const total = slot.tasks.length;
+    const allDone = total>0 && done===total;
+    const isOpen = openSections[slot.time] === undefined ? true : openSections[slot.time];
+    const barCol = allDone ? '#5c8a6e' : (currentMode==='day'?'#f4b942':'#3d5a80');
+    const safeKey = slot.time.replace(/[: ]/g,'_');
+
+    return `<div class="section ${allDone?'complete':''}">
+      <button class="section-header ${allDone?'bg-done':'bg-normal'}" data-slot-header="${safeKey}">
+        <div class="section-left">
+          <span style="font-size:15px;">${slot.emoji}</span>
+          <span class="time-badge" style="background:${barCol}">${slot.time}</span>
+          <span class="section-count ${allDone?'done':''}">${done}/${total}${allDone?' ✓':''}</span>
+        </div>
+        <div class="section-right">
+          <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${total?done/total*100:0}%;background:${barCol}"></div></div>
+          <span class="chev">${isOpen?'▲':'▼'}</span>
+        </div>
+      </button>
+      ${isOpen ? `<div class="section-body">${slot.tasks.map(task => {
+        const checked = !!slotChecks[task];
+        const whoInfo = slotWho[task];
+        return `<div class="task-row" style="${checked?'opacity:.7':''}" data-slot="${escapeAttr(slot.time)}" data-task="${escapeAttr(task)}">
+          <div class="checkbox ${checked?'checked':''}">${checked?'✓':''}</div>
+          <div class="task-content">
+            <div class="task-label ${checked?'done':''}">${escapeHtml(task)}</div>
+            ${checked && whoInfo ? `<div class="task-who">${escapeHtml(whoInfo.who||'')} ticked @ ${escapeHtml(whoInfo.at||'')}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('')}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // Wire up section headers
+  container.querySelectorAll('[data-slot-header]').forEach(el => {
+    el.addEventListener('click', () => {
+      const key = el.dataset.slotHeader.replace(/_/g,' ').replace(/ (AM|PM)/,':$1').replace(':AM',' AM').replace(':PM',' PM');
+      // Use a simpler approach: find the actual slot by iterating
+      const realKey = [...slots].find(s => s.time.replace(/[: ]/g,'_') === el.dataset.slotHeader);
+      if (realKey) {
+        const k = realKey.time;
+        openSections[k] = openSections[k]===undefined ? false : !openSections[k];
+        render();
+      }
+    });
+  });
+
+  // Wire up task rows
+  container.querySelectorAll('[data-task]').forEach(el => {
+    el.addEventListener('click', () => toggleTask(el.dataset.slot, el.dataset.task));
+  });
+}
+
+function renderRecords() {
+  const day = DAYS[currentDay];
+  const rec = getNested(data,['records',day],{food:'',drink:'',nappy:''}) || {};
+  const foodEl  = document.getElementById('recFood');
+  const drinkEl = document.getElementById('recDrink');
+  const nappyEl = document.getElementById('recNappy');
+  if (document.activeElement !== foodEl)  foodEl.value  = rec.food  || '';
+  if (document.activeElement !== drinkEl) drinkEl.value = rec.drink || '';
+  if (document.activeElement !== nappyEl) nappyEl.value = rec.nappy || '';
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+//==============================================================
+// INIT
+//==============================================================
+window.addEventListener('load', async () => {
+  // Check config
+  if (!PANTRY_ID || PANTRY_ID === 'PASTE_YOUR_PANTRY_ID_HERE' || PANTRY_ID.length < 10) {
+    document.getElementById('setupScreen').classList.remove('hidden');
+    return;
+  }
+
+  // Auto-rejoin if name already saved
+  const savedName = localStorage.getItem('mumCareUserName');
+  if (savedName) {
+    userName = savedName;
+    enterApp();
+    return;
+  }
+
+  // Show name entry
+  document.getElementById('nameScreen').classList.remove('hidden');
+  const nameInput = document.getElementById('nameInput');
+  nameInput.focus();
+  nameInput.addEventListener('keydown', e => { if (e.key==='Enter') submitName(); });
+  document.getElementById('nameContinueBtn').addEventListener('click', submitName);
+});
+
+function submitName() {
+  const val = document.getElementById('nameInput').value.trim();
+  if (!val) {
+    document.getElementById('nameError').textContent = 'Please enter your name.';
+    return;
+  }
+  userName = val;
+  localStorage.setItem('mumCareUserName', val);
+  document.getElementById('nameScreen').classList.add('hidden');
+  enterApp();
+}
+
+function enterApp() {
+  document.getElementById('appScreen').classList.remove('hidden');
+  document.getElementById('userNameDisp').textContent = userName;
+
+  // Wire up mode buttons
+  document.getElementById('modeDayBtn').addEventListener('click', () => { currentMode='day'; render(); });
+  document.getElementById('modeNightBtn').addEventListener('click', () => { currentMode='night'; render(); });
+
+  // Wire up record textareas
+  document.getElementById('recFood').addEventListener('input', e => queueRecordSave('food', e.target.value));
+  document.getElementById('recDrink').addEventListener('input', e => queueRecordSave('drink', e.target.value));
+  document.getElementById('recNappy').addEventListener('input', e => queueRecordSave('nappy', e.target.value));
+
+  // Reset button
+  document.getElementById('resetBtn').addEventListener('click', resetCurrentDayMode);
+
+  startPolling();
+}
+</script>
+</body>
+</html>
