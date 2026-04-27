@@ -205,7 +205,7 @@
   .calendar-day.empty{background:transparent;color:#ddd;cursor:default;}
   body.dark .calendar-day.empty{color:#3d4751;}
   .calendar-day.has-data{background:#a8d5b5;color:#2d4d3a;}
-  .calendar-day.future{opacity:.3;cursor:default;}
+  .calendar-day.future{opacity:.3;}
   .calendar-day.today{outline:2px solid #f4b942;}
 
   @media print {
@@ -928,6 +928,7 @@ function renderTrolley() {
 }
 function renderSlots() {
   const slots = slotsForMode(currentMode);
+  sortSlots(slots, currentMode);
   const day = ensureDay(currentDate);
   const cont = document.getElementById('slotsContainer');
   cont.innerHTML = slots.map(slot => {
@@ -939,19 +940,18 @@ function renderSlots() {
     const isOpen = openSections[slot.id] === true;
     const barCol = allDone?'#5c8a6e':(currentMode==='day'?'#f4b942':'#3d5a80');
     return `<div class="section ${allDone?'complete':''}">
-      <button class="section-header ${allDone?'bg-done':'bg-normal'}" data-slot-header="${escapeAttr(slot.id)}">
+      <div class="section-header ${allDone?'bg-done':'bg-normal'}" data-slot-header="${escapeAttr(slot.id)}">
         <div class="section-left">
           <span style="font-size:15px;">${escapeHtml(slot.emoji||'⏰')}</span>
           <span class="time-badge" style="background:${barCol}">${escapeHtml(slot.time)}</span>
           <span class="section-count ${allDone?'done':''}">${done}/${total}${allDone?' ✓':''}</span>
         </div>
         <div class="section-right">
-          ${editMode?`<button class="edit-slot-rename" data-edit-slot="${escapeAttr(slot.id)}" title="Rename time slot" style="background:rgba(244,185,66,.2);border:1px solid #f4b942;color:#9a7510;font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">✏️ Rename</button>
-          <button class="edit-slot-delete" data-delete-slot="${escapeAttr(slot.id)}" title="Delete time slot" style="background:rgba(220,60,60,.1);border:1px solid #e0a0a0;color:#c06060;font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:700;">🗑️</button>`:''}
+          ${editMode?`<button class="edit-slot-rename" data-edit-slot="${escapeAttr(slot.id)}" title="Rename time slot" style="background:rgba(244,185,66,.2);border:1px solid #f4b942;color:#9a7510;font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">✏️ Rename</button><button class="edit-slot-delete" data-delete-slot="${escapeAttr(slot.id)}" title="Delete time slot" style="background:rgba(220,60,60,.1);border:1px solid #e0a0a0;color:#c06060;font-size:11px;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:700;">🗑️</button>`:''}
           <div class="mini-bar-bg"><div class="mini-bar-fill" style="width:${total?done/total*100:0}%;background:${barCol}"></div></div>
           <span class="chev">${isOpen?'▲':'▼'}</span>
         </div>
-      </button>
+      </div>
       ${isOpen?`<div class="section-body">${slot.tasks.map(task => {
         const checked = !!sc[task];
         const wInfo = sw[task];
@@ -1041,7 +1041,7 @@ function renderHistoryCalendar() {
     const btn = document.createElement('button');
     btn.className = 'calendar-day' + (has?' has-data':'') + (future?' future':'') + (isActiveCareDate(ds)?' today':'');
     btn.textContent = d;
-    if (!future) btn.addEventListener('click', () => {
+    btn.addEventListener('click', () => {
       currentDate = ds;
       viewingHistory = isReadOnly(ds);
       weekStart = startOfWeek(dateStrToDate(ds));
@@ -1102,7 +1102,7 @@ function enterApp() {
   document.getElementById('historyCloseBtn').addEventListener('click', hideHistoryCalendar);
   document.getElementById('exitHistoryBtn').addEventListener('click', () => { currentDate = activeCareDateStr(); viewingHistory = false; weekStart = startOfWeek(dateStrToDate(currentDate)); render(); });
   document.getElementById('historyPrevMonth').addEventListener('click', () => { historyMonth = new Date(historyMonth.getFullYear(), historyMonth.getMonth()-1, 1); renderHistoryCalendar(); });
-  document.getElementById('historyNextMonth').addEventListener('click', () => { const n = new Date(historyMonth.getFullYear(), historyMonth.getMonth()+1, 1); if (n > new Date()) return; historyMonth = n; renderHistoryCalendar(); });
+  document.getElementById('historyNextMonth').addEventListener('click', () => { historyMonth = new Date(historyMonth.getFullYear(), historyMonth.getMonth()+1, 1); renderHistoryCalendar(); });
 
   document.getElementById('editBtn').addEventListener('click', () => {
     document.getElementById('appScreen').classList.add('hidden');
