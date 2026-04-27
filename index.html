@@ -15,6 +15,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" defer></script>
 
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:inherit;}
@@ -66,21 +68,24 @@
 
   .main{max-width:600px;margin:0 auto;padding:0 14px;}
 
-  .date-row{margin-top:16px;display:flex;align-items:center;gap:8px;}
-  .nav-btn{background:#fff;border:none;width:36px;height:36px;border-radius:10px;font-size:18px;color:#5c8a6e;box-shadow:0 1px 4px rgba(0,0,0,.07);flex-shrink:0;}
-  body.dark .nav-btn{background:#2a3038;color:#a8d5b5;}
-  .day-selector{flex:1;display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .day-selector::-webkit-scrollbar{display:none;}
-  .day-btn{flex-shrink:0;min-width:48px;padding:8px 4px;border:none;border-radius:10px;font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;}
-  .day-btn.active{background:#5c8a6e;color:#fff;box-shadow:0 3px 12px rgba(92,138,110,.35);font-weight:700;}
-  .day-btn.inactive{background:#fff;color:#7a8a7c;box-shadow:0 1px 4px rgba(0,0,0,.07);}
-  body.dark .day-btn.inactive{background:#2a3038;color:#9aa6b0;}
-  .day-btn.today-marker{outline:2px solid #f4b942;}
+  .date-card{margin-top:16px;background:#fff;border-radius:16px;padding:10px 12px 12px;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+  body.dark .date-card{background:#2a3038;}
+  .date-card-inner{display:flex;align-items:center;gap:4px;}
+  .nav-btn{background:transparent;border:none;width:30px;height:30px;border-radius:8px;font-size:18px;color:#5c8a6e;flex-shrink:0;}
+  body.dark .nav-btn{color:#a8d5b5;}
+  .day-selector{flex:1;display:flex;gap:3px;}
+  .day-btn{flex:1;padding:7px 2px;border:none;border-radius:9px;font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:2px;background:transparent;color:#7a8a7c;cursor:pointer;}
+  body.dark .day-btn{color:#9aa6b0;}
+  .day-btn.active{background:#5c8a6e;color:#fff;box-shadow:0 3px 10px rgba(92,138,110,.3);}
+  .day-btn.care-day{background:#fef3e0;color:#9a7510;}
+  body.dark .day-btn.care-day{background:rgba(244,185,66,.15);color:#f4b942;}
+  .day-btn.future-day{opacity:.45;}
   .day-btn .dnum{font-size:14px;font-weight:700;}
   .day-btn .dlabel{font-size:9px;opacity:.7;}
-
-  .date-full{text-align:center;margin-top:8px;color:#5c8a6e;font-size:13px;font-weight:600;}
-  body.dark .date-full{color:#a8d5b5;}
+  .week-month-label{text-align:center;margin-top:8px;color:#5c8a6e;font-size:12px;font-weight:600;}
+  body.dark .week-month-label{color:#a8d5b5;}
+  .back-today-pill{display:block;width:-moz-fit-content;width:fit-content;margin:10px auto 0;padding:5px 14px;background:#5c8a6e;border:none;border-radius:20px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;}
+  .back-today-pill:active{background:#4a7a5e;}
   .history-mode-banner{margin-top:8px;background:#fef3e0;border:1.5px dashed #f4b942;border-radius:10px;padding:8px 14px;font-size:12px;color:#9a7510;text-align:center;}
   body.dark .history-mode-banner{background:rgba(244,185,66,.1);color:#f4b942;}
 
@@ -305,12 +310,15 @@
       <button id="exitHistoryBtn" style="background:transparent;border:none;color:#9a7510;font-weight:700;text-decoration:underline;margin-left:8px;cursor:pointer;">Back to today</button>
     </div>
 
-    <div class="date-row no-print">
-      <button id="prevWeekBtn" class="nav-btn" title="Previous week">‹</button>
-      <div id="daySelector" class="day-selector"></div>
-      <button id="nextWeekBtn" class="nav-btn" title="Next week">›</button>
+    <div class="date-card no-print">
+      <div class="date-card-inner">
+        <button id="prevWeekBtn" class="nav-btn" title="Previous week">‹</button>
+        <div id="daySelector" class="day-selector"></div>
+        <button id="nextWeekBtn" class="nav-btn" title="Next week">›</button>
+      </div>
+      <div id="weekMonthLabel" class="week-month-label"></div>
     </div>
-    <div id="dateFull" class="date-full"></div>
+    <button id="backTodayBtn" class="back-today-pill hidden no-print">↩ Today</button>
 
     <div class="mode-toggle no-print">
       <button id="modeDayBtn" class="mode-btn active-day">☀️ Day Shifts</button>
@@ -422,7 +430,40 @@ function isReadOnly(s){
   const cutoff = dateToStr(addDays(new Date(), -EDITABLE_PAST_DAYS));
   return s < cutoff;
 }
-function detectMode(){ const h=new Date().getHours(); return (h>=7 && h<20)?'day':'night'; }
+function firstDayShiftMinutes() {
+  const t = getTemplate();
+  const slots = t.daySlots || [];
+  if (!slots.length) return 9 * 60 + 30;
+  return Math.min(...slots.map(s => parseTimeForSort(s.time)));
+}
+function firstNightShiftMinutes() {
+  const t = getTemplate();
+  const slots = t.nightSlots || [];
+  const pmSlots = slots.filter(s => parseTimeForSort(s.time) >= 12 * 60);
+  if (!pmSlots.length) return 21 * 60 + 30;
+  return Math.min(...pmSlots.map(s => parseTimeForSort(s.time)));
+}
+function activeCareDateStr() {
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  if (nowMin < firstDayShiftMinutes()) return dateToStr(addDays(now, -1));
+  return dateToStr(now);
+}
+function isActiveCareDate(s) { return s === activeCareDateStr(); }
+function detectMode() {
+  const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const fdm = firstDayShiftMinutes();
+  const fnm = firstNightShiftMinutes();
+  if (nowMin < fdm || nowMin >= fnm) return 'night';
+  return 'day';
+}
+function weekMonthLabel() {
+  const M = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const s = weekStart, e = addDays(weekStart, 6);
+  if (s.getMonth() === e.getMonth()) return `${M[s.getMonth()]} ${s.getFullYear()}`;
+  if (s.getFullYear() === e.getFullYear()) return `${M[s.getMonth()]} – ${M[e.getMonth()]} ${s.getFullYear()}`;
+  return `${M[s.getMonth()]} ${s.getFullYear()} – ${M[e.getMonth()]} ${e.getFullYear()}`;
+}
 function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s){ return escapeHtml(s); }
 function truncate(s,n){ s=String(s); return s.length>n?s.slice(0,n)+'…':s; }
@@ -607,34 +648,154 @@ function deleteSlot(slotId) {
   t.nightSlots = t.nightSlots.filter(s => s.id !== slotId);
   render(); scheduleSave();
 }
-function parseTimeForSort(timeStr) {
-  // Parse "9:30 AM", "11:00 PM" etc into a sortable number
+function parseTimeForSort(timeStr, mode) {
   const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!match) return 9999;
   let h = parseInt(match[1]), m = parseInt(match[2]);
   const pm = match[3].toUpperCase() === 'PM';
   if (pm && h !== 12) h += 12;
   if (!pm && h === 12) h = 0;
-  return h * 60 + m;
+  const minutes = h * 60 + m;
+  if (mode === 'night' && minutes < 12 * 60) return minutes + 24 * 60;
+  return minutes;
 }
-function sortSlots(slots) {
-  return slots.sort((a, b) => parseTimeForSort(a.time) - parseTimeForSort(b.time));
+function sortSlots(slots, mode) {
+  return slots.sort((a, b) => parseTimeForSort(a.time, mode) - parseTimeForSort(b.time, mode));
 }
 function addSlot() {
   const time = prompt('Time label (e.g. "4:00 PM"):');
   if (!time || !time.trim()) return;
   const t = getTemplate();
   const newSlot = { id:'s_'+Date.now(), time:time.trim(), emoji:'⏰', tasks:[] };
-  if (currentMode === 'day') { t.daySlots.push(newSlot); t.daySlots = sortSlots(t.daySlots); }
-  else { t.nightSlots.push(newSlot); t.nightSlots = sortSlots(t.nightSlots); }
+  if (currentMode === 'day') { t.daySlots.push(newSlot); t.daySlots = sortSlots(t.daySlots, 'day'); }
+  else { t.nightSlots.push(newSlot); t.nightSlots = sortSlots(t.nightSlots, 'night'); }
   render(); scheduleSave();
 }
 
 function exportDay() {
-  const prev = {...openSections};
-  slotsForMode(currentMode).forEach(s => openSections[s.id] = true);
-  render();
-  setTimeout(() => { window.print(); openSections = prev; render(); }, 200);
+  const jspdfLib = window.jspdf;
+  if (!jspdfLib || !jspdfLib.jsPDF) {
+    alert('PDF library is still loading — please try again in a moment.');
+    return;
+  }
+  const { jsPDF } = jspdfLib;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const mg = 14;
+  const dateLabel = fullDate(dateStrToDate(currentDate));
+  const exportTime = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(18);
+  doc.text("Mum's Care Checklist", mg, 20);
+  doc.setFont('helvetica','normal'); doc.setFontSize(12);
+  doc.text(dateLabel, mg, 28);
+  doc.setFontSize(9); doc.setTextColor(120);
+  doc.text(`Exported by ${userName} at ${exportTime}`, mg, 34);
+  doc.setTextColor(0);
+
+  let y = 42;
+
+  function maybeNewPage(need) {
+    if (y + need > pageH - 20) { doc.addPage(); y = 16; }
+  }
+
+  function sectionTitle(title, r, g, b) {
+    maybeNewPage(14);
+    doc.setFillColor(r, g, b);
+    doc.roundedRect(mg, y, pageW - mg * 2, 8, 2, 2, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(255);
+    doc.text(title, mg + 3, y + 5.5);
+    doc.setTextColor(0); doc.setFont('helvetica','normal');
+    y += 10;
+  }
+
+  function shiftTable(slots, dayData) {
+    const rows = [];
+    (slots||[]).forEach(slot => {
+      const sc = dayData.checks?.[slot.id] || {};
+      const sw = dayData.who?.[slot.id] || {};
+      (slot.tasks||[]).forEach(task => {
+        const checked = !!sc[task];
+        const wi = sw[task];
+        rows.push([slot.time, task, checked ? '✓' : '', wi?.who||'', wi?.at||'']);
+      });
+    });
+    if (!rows.length) rows.push(['—','No tasks','','','']);
+    doc.autoTable({
+      startY: y,
+      head: [['Time','Task','✓','Who','When']],
+      body: rows,
+      margin: {left:mg, right:mg},
+      headStyles: {fillColor:[220,235,225], textColor:[40,80,55], fontStyle:'bold', fontSize:9},
+      bodyStyles: {fontSize:9},
+      alternateRowStyles: {fillColor:[248,252,250]},
+      columnStyles: {0:{cellWidth:22},1:{cellWidth:'auto'},2:{cellWidth:9,halign:'center'},3:{cellWidth:26},4:{cellWidth:18}},
+      theme: 'plain',
+    });
+    y = doc.lastAutoTable.finalY + 6;
+  }
+
+  const day = ensureDay(currentDate);
+  const tmpl = getTemplate();
+
+  sectionTitle('Day Shifts', 92, 138, 110);
+  shiftTable(tmpl.daySlots, day);
+
+  sectionTitle('Night Shifts', 61, 90, 128);
+  shiftTable(tmpl.nightSlots, day);
+
+  sectionTitle('Daily Record', 100, 120, 100);
+  const r = day.records || {};
+  doc.autoTable({
+    startY: y,
+    head: [['Field','Notes']],
+    body: [
+      ['Food eaten', r.food||'—'],
+      ['Water / Ensure', r.drink||'—'],
+      ['Nappy contents', r.nappy||'—'],
+      ['Supplements given', r.supplementsGiven ? 'Yes' : 'No'],
+      ['Supplement details', r.supplements||'—'],
+      ['Extra notes', r.extra||'—'],
+    ],
+    margin: {left:mg, right:mg},
+    headStyles: {fillColor:[220,235,225], textColor:[40,80,55], fontStyle:'bold', fontSize:9},
+    bodyStyles: {fontSize:9},
+    alternateRowStyles: {fillColor:[248,252,250]},
+    columnStyles: {0:{cellWidth:42, fontStyle:'bold'}, 1:{cellWidth:'auto'}},
+    theme: 'plain',
+  });
+  y = doc.lastAutoTable.finalY + 6;
+
+  sectionTitle('Activity Log', 80, 100, 120);
+  const acts = [...(day.activity||[])].reverse();
+  const actRows = acts.map(a => {
+    const type = a.isReset ? 'Reset' : a.isNote ? 'Note' : a.done ? 'Ticked' : 'Unticked';
+    const desc = (a.isReset||a.isNote) ? (a.task||'') : `${a.task||''}${a.slotTime?' @ '+a.slotTime:''}`;
+    return [a.at||'', a.who||'', type, desc];
+  });
+  if (!actRows.length) actRows.push(['','','','No activity recorded']);
+  doc.autoTable({
+    startY: y,
+    head: [['Time','Who','Action','Detail']],
+    body: actRows,
+    margin: {left:mg, right:mg},
+    headStyles: {fillColor:[220,228,240], textColor:[40,55,80], fontStyle:'bold', fontSize:9},
+    bodyStyles: {fontSize:9},
+    alternateRowStyles: {fillColor:[248,250,252]},
+    columnStyles: {0:{cellWidth:16},1:{cellWidth:26},2:{cellWidth:20},3:{cellWidth:'auto'}},
+    theme: 'plain',
+  });
+
+  const total = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= total; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8); doc.setTextColor(160);
+    doc.text(`Page ${i} of ${total}`, pageW - mg, pageH - 8, {align:'right'});
+  }
+  doc.setTextColor(0);
+
+  doc.save(`mums-care-${currentDate}.pdf`);
 }
 
 async function pollTick() {
@@ -677,15 +838,18 @@ function render() {
 function renderDaySelector() {
   const el = document.getElementById('daySelector');
   el.innerHTML = '';
+  const activeDate = activeCareDateStr();
   for (let i=0;i<7;i++) {
     const d = addDays(weekStart, i);
     const ds = dateToStr(d);
     const future = isFuture(ds);
     const active = ds === currentDate;
-    const today = isToday(ds);
     const btn = document.createElement('button');
-    btn.className = 'day-btn ' + (active?'active':'inactive') + (today?' today-marker':'') + (future?' future-day':'');
-    if (future) btn.style.opacity = '0.55';
+    let cls = 'day-btn';
+    if (active) cls += ' active';
+    else if (ds === activeDate) cls += ' care-day';
+    if (future) cls += ' future-day';
+    btn.className = cls;
     btn.innerHTML = `<span class="dlabel">${shortDow(d)}</span><span class="dnum">${d.getDate()}</span>`;
     btn.addEventListener('click', () => {
       currentDate = ds;
@@ -694,7 +858,10 @@ function renderDaySelector() {
     });
     el.appendChild(btn);
   }
-  document.getElementById('dateFull').textContent = fullDate(dateStrToDate(currentDate));
+  const wml = document.getElementById('weekMonthLabel');
+  if (wml) wml.textContent = weekMonthLabel();
+  const btb = document.getElementById('backTodayBtn');
+  if (btb) btb.classList.toggle('hidden', currentDate === activeDate);
 }
 function renderModeToggle() {
   document.getElementById('modeDayBtn').className = 'mode-btn' + (currentMode==='day'?' active-day':'');
@@ -871,9 +1038,8 @@ function renderHistoryCalendar() {
     const dayData = data.days?.[ds];
     const has = !!dayData && ((dayData.activity?.length>0) || (dayData.records && Object.values(dayData.records).some(v => v && v!==false)));
     const future = isFuture(ds);
-    const today = isToday(ds);
     const btn = document.createElement('button');
-    btn.className = 'calendar-day' + (has?' has-data':'') + (future?' future':'') + (today?' today':'');
+    btn.className = 'calendar-day' + (has?' has-data':'') + (future?' future':'') + (isActiveCareDate(ds)?' today':'');
     btn.textContent = d;
     if (!future) btn.addEventListener('click', () => {
       currentDate = ds;
@@ -892,6 +1058,8 @@ window.addEventListener('load', async () => {
     return;
   }
   currentMode = detectMode();
+  currentDate = activeCareDateStr();
+  weekStart = startOfWeek(dateStrToDate(currentDate));
   const savedName = localStorage.getItem('mumCareUserName');
   if (savedName) { userName = savedName; enterApp(); return; }
   document.getElementById('nameScreen').classList.remove('hidden');
@@ -932,7 +1100,7 @@ function enterApp() {
 
   document.getElementById('historyBtn').addEventListener('click', showHistoryCalendar);
   document.getElementById('historyCloseBtn').addEventListener('click', hideHistoryCalendar);
-  document.getElementById('exitHistoryBtn').addEventListener('click', () => { currentDate = todayStr(); viewingHistory = false; weekStart = startOfWeek(new Date()); render(); });
+  document.getElementById('exitHistoryBtn').addEventListener('click', () => { currentDate = activeCareDateStr(); viewingHistory = false; weekStart = startOfWeek(dateStrToDate(currentDate)); render(); });
   document.getElementById('historyPrevMonth').addEventListener('click', () => { historyMonth = new Date(historyMonth.getFullYear(), historyMonth.getMonth()-1, 1); renderHistoryCalendar(); });
   document.getElementById('historyNextMonth').addEventListener('click', () => { const n = new Date(historyMonth.getFullYear(), historyMonth.getMonth()+1, 1); if (n > new Date()) return; historyMonth = n; renderHistoryCalendar(); });
 
@@ -948,6 +1116,28 @@ function enterApp() {
     document.getElementById('appScreen').classList.remove('hidden');
   });
   document.getElementById('exitEditBtn').addEventListener('click', exitEditMode);
+
+  document.getElementById('backTodayBtn').addEventListener('click', () => {
+    currentDate = activeCareDateStr();
+    weekStart = startOfWeek(dateStrToDate(currentDate));
+    currentMode = detectMode();
+    viewingHistory = false;
+    render();
+  });
+
+  let lastKnownActiveDate = activeCareDateStr();
+  setInterval(() => {
+    const newActive = activeCareDateStr();
+    if (newActive !== lastKnownActiveDate) {
+      if (currentDate === lastKnownActiveDate) {
+        currentDate = newActive;
+        weekStart = startOfWeek(dateStrToDate(currentDate));
+        currentMode = detectMode();
+        render();
+      }
+      lastKnownActiveDate = newActive;
+    }
+  }, 30000);
 
   startPolling();
 }
