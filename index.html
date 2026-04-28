@@ -275,6 +275,15 @@
   .cl-cancel-edit-btn{padding:5px 10px;background:transparent;border:1.5px solid #d0c8c0;border-radius:7px;color:#888;font-size:12px;cursor:pointer;}
   body.dark .cl-cancel-edit-btn{border-color:#4a5560;color:#9aa6b0;}
   .care-log-empty{font-size:12px;color:#bbb;text-align:center;padding:14px 0;font-style:italic;}
+  .care-custom-section{padding:8px 12px 12px;border-top:1px solid #f0e8e0;}
+  body.dark .care-custom-section{border-top-color:#363c44;}
+  .care-custom-label{font-size:10px;color:#bbb;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-weight:700;}
+  body.dark .care-custom-label{color:#7a8696;}
+  .care-custom-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f0eb;}
+  body.dark .care-custom-row{border-bottom-color:#363c44;}
+  .care-custom-row:last-of-type{border-bottom:none;}
+  .care-custom-name{font-size:13px;color:#3d4a3e;}
+  body.dark .care-custom-name{color:#cdd5dd;}
   .live-clock{font-size:11px;color:#5c8a6e;font-weight:600;float:right;}
   body.dark .live-clock{color:#a8d5b5;}
 
@@ -621,6 +630,7 @@ function getTemplate() {
   if (!data.template.daySlots) data.template.daySlots = JSON.parse(JSON.stringify(DEFAULT_TEMPLATE.daySlots));
   if (!data.template.nightSlots) data.template.nightSlots = JSON.parse(JSON.stringify(DEFAULT_TEMPLATE.nightSlots));
   if (!data.template.trolley) data.template.trolley = [...DEFAULT_TEMPLATE.trolley];
+  if (!data.template.customCareEvents) data.template.customCareEvents = [];
   return data.template;
 }
 function slotsForMode(m){ const t=getTemplate(); return m==='day'?t.daySlots:t.nightSlots; }
@@ -1186,6 +1196,18 @@ function fmtElapsed(ts) {
   return m > 0 ? `${h}h ${m}m ago` : `${h}h ago`;
 }
 
+function fmtElapsedFromTime(timeStr, dateStr) {
+  if (!timeStr || !dateStr) return '';
+  const [hh, mm] = timeStr.split(':').map(Number);
+  if (isNaN(hh) || isNaN(mm)) return '';
+  const [y, mo, d] = dateStr.split('-').map(Number);
+  let ref = new Date(y, mo - 1, d, hh, mm, 0, 0);
+  // If the resulting moment is in the future the event belongs to the previous calendar day
+  // (e.g. a 23:30 night-shift entry viewed the next morning)
+  if (ref > new Date()) ref = new Date(ref.getTime() - 86400000);
+  return fmtElapsed(ref.getTime());
+}
+
 function ensureCareLog(ds) {
   const day = ensureDay(ds);
   if (!day.careLog) day.careLog = [];
@@ -1204,39 +1226,43 @@ function careCurrentState(ds) {
   };
 }
 
+function elapsedSpan(timeStr, dateStr) {
+  return `<span class="care-elapsed" data-care-time="${escapeAttr(timeStr||'')}" data-care-date="${escapeAttr(dateStr||'')}">${fmtElapsedFromTime(timeStr, dateStr)}</span>`;
+}
+
 function careStatusHtml(ds) {
   const s = careCurrentState(ds);
   const parts = [];
 
   if (s.position) {
     const cfg = CARE_POSITION_SUBS[s.position.subtype] || {};
-    parts.push(`<b>Position:</b> ${escapeHtml(cfg.icon||'')} ${escapeHtml(cfg.label||s.position.subtype)} since ${escapeHtml(s.position.time)} (<span class="care-elapsed" data-ts="${s.position.ts}">${fmtElapsed(s.position.ts)}</span>)`);
+    parts.push(`<b>Position:</b> ${escapeHtml(cfg.icon||'')} ${escapeHtml(cfg.label||s.position.subtype)} since ${escapeHtml(s.position.time)} (${elapsedSpan(s.position.time, ds)})`);
   } else {
     parts.push('<b>Position:</b> Unknown');
   }
 
   if (s.sleep) {
     const cfg = CARE_SLEEP_SUBS[s.sleep.subtype] || {};
-    parts.push(`${escapeHtml(cfg.icon||'')} <b>${escapeHtml(cfg.label||s.sleep.subtype)}</b> since ${escapeHtml(s.sleep.time)} (<span class="care-elapsed" data-ts="${s.sleep.ts}">${fmtElapsed(s.sleep.ts)}</span>)`);
+    parts.push(`${escapeHtml(cfg.icon||'')} <b>${escapeHtml(cfg.label||s.sleep.subtype)}</b> since ${escapeHtml(s.sleep.time)} (${elapsedSpan(s.sleep.time, ds)})`);
   } else {
     parts.push('<b>Sleep:</b> Unknown');
   }
 
   if (s.lastBowels) {
     const bSub = CARE_BOWEL_SUBS[s.lastBowels.subtype]?.label || s.lastBowels.subtype || '—';
-    parts.push(`<b>Last bowels:</b> ${escapeHtml(s.lastBowels.time)} (${escapeHtml(bSub)}) · <span class="care-elapsed" data-ts="${s.lastBowels.ts}">${fmtElapsed(s.lastBowels.ts)}</span>`);
+    parts.push(`<b>Last bowels:</b> ${escapeHtml(s.lastBowels.time)} (${escapeHtml(bSub)}) · ${elapsedSpan(s.lastBowels.time, ds)}`);
   } else {
     parts.push('<b>Last bowels:</b> Unknown');
   }
 
   if (s.lastEaten) {
-    parts.push(`<b>Last eaten:</b> ${escapeHtml(s.lastEaten.time)} (<span class="care-elapsed" data-ts="${s.lastEaten.ts}">${fmtElapsed(s.lastEaten.ts)}</span>)`);
+    parts.push(`<b>Last eaten:</b> ${escapeHtml(s.lastEaten.time)} (${elapsedSpan(s.lastEaten.time, ds)})`);
   } else {
     parts.push('<b>Last eaten:</b> Unknown');
   }
 
   if (s.lastDrank) {
-    parts.push(`<b>Last drank:</b> ${escapeHtml(s.lastDrank.time)} (<span class="care-elapsed" data-ts="${s.lastDrank.ts}">${fmtElapsed(s.lastDrank.ts)}</span>)`);
+    parts.push(`<b>Last drank:</b> ${escapeHtml(s.lastDrank.time)} (${elapsedSpan(s.lastDrank.time, ds)})`);
   } else {
     parts.push('<b>Last drank:</b> Unknown');
   }
@@ -1256,6 +1282,10 @@ function careEventLabel(entry) {
   if (entry.type === 'bowels') {
     const sub = CARE_BOWEL_SUBS[entry.subtype]?.label || entry.subtype || '';
     return `🚽 Bowels${sub ? ' — '+sub : ''}`;
+  }
+  if (entry.type === 'custom') {
+    const def = (getTemplate().customCareEvents || []).find(e => e.name === entry.subtype) || {};
+    return `${def.emoji||'📌'} ${entry.subtype||'Custom event'}`;
   }
   const map = { eaten:{icon:'🍽️',label:'Eaten'}, drank:{icon:'💧',label:'Drank'}, note:{icon:'📝',label:'Note'} };
   const cfg = map[entry.type] || {icon:'❓', label:entry.type};
@@ -1278,6 +1308,7 @@ function renderCareLog() {
   const state = careCurrentState(currentDate);
 
   // ── Button grid ──
+  const customEvents = getTemplate().customCareEvents || [];
   const btnsHtml = CARE_BUTTONS.map(btn => {
     const key = btn.subtype ? `${btn.type}__${btn.subtype}` : btn.type;
     const isOpen = !!(careFormState && careFormState.type === btn.type && careFormState.subtype === btn.subtype);
@@ -1289,6 +1320,10 @@ function renderCareLog() {
       if (cur && cur.subtype === btn.subtype) cls += ' cl-active';
     }
     return `<button class="${cls}" data-care-btn="${escapeAttr(key)}">${escapeHtml(btn.icon)}<br/><span style="font-size:10px;">${escapeHtml(btn.label)}</span></button>`;
+  }).join('') + customEvents.map(evt => {
+    const key = `custom__${evt.name}`;
+    const isOpen = !!(careFormState && careFormState.type === 'custom' && careFormState.subtype === evt.name);
+    return `<button class="care-btn${isOpen?' cl-open':''}" data-care-btn="${escapeAttr(key)}">${escapeHtml(evt.emoji||'📌')}<br/><span style="font-size:10px;">${escapeHtml(evt.name)}</span></button>`;
   }).join('');
 
   // ── Inline form ──
@@ -1304,6 +1339,9 @@ function renderCareLog() {
       title = `${cfg.icon||''} Log: ${cfg.label||fs.subtype}`;
     } else if (fs.type === 'bowels') {
       title = '🚽 Log: Bowels';
+    } else if (fs.type === 'custom') {
+      const def = (getTemplate().customCareEvents || []).find(e => e.name === fs.subtype) || {};
+      title = `${def.emoji||'📌'} Log: ${fs.subtype||'Custom event'}`;
     } else {
       const map = { eaten:{icon:'🍽️',label:'Eaten'}, drank:{icon:'💧',label:'Drank'}, note:{icon:'📝',label:'Note'} };
       const cfg = map[fs.type] || {icon:'❓', label:fs.type};
@@ -1347,7 +1385,7 @@ function renderCareLog() {
       return `<div class="care-log-entry">
         <div class="care-log-time-col">
           <span class="care-log-time">${escapeHtml(entry.time||'')}</span>
-          <span class="care-elapsed" data-ts="${entry.ts}">${fmtElapsed(entry.ts)}</span>
+          ${elapsedSpan(entry.time, currentDate)}
         </div>
         <div class="care-log-body">
           <div class="care-log-label">${escapeHtml(label)}</div>
@@ -1368,10 +1406,27 @@ function renderCareLog() {
     }).join('');
   }
 
+  // ── Custom events management section (edit mode only) ──
+  let customSectionHtml = '';
+  if (editMode && !viewingHistory) {
+    const rows = customEvents.map(evt =>
+      `<div class="care-custom-row">
+        <span class="care-custom-name">${escapeHtml(evt.emoji||'📌')} ${escapeHtml(evt.name)}</span>
+        <button class="cl-del-btn" data-del-custom="${escapeAttr(evt.name)}" title="Remove custom event type">🗑️</button>
+      </div>`
+    ).join('');
+    customSectionHtml = `<div class="care-custom-section">
+      <div class="care-custom-label">Custom Events</div>
+      ${rows || '<div style="font-size:12px;color:#bbb;font-style:italic;padding:4px 0 6px;">No custom events yet</div>'}
+      <button class="add-task-btn" style="margin-top:8px;" id="addCustomEventBtn">＋ Add custom event type</button>
+    </div>`;
+  }
+
   sec.innerHTML = `
     <div class="care-log-status" id="careLogStatus">${careStatusHtml(currentDate)}</div>
     ${!viewingHistory ? `<div class="care-btn-grid">${btnsHtml}</div>` : ''}
     ${formHtml}
+    ${customSectionHtml}
     <div class="care-log-viewer">
       <button class="care-log-toggle" id="careLogToggle">
         <span class="care-log-toggle-label">📋 Care Log — ${escapeHtml(fullDate(dateStrToDate(currentDate)))}</span>
@@ -1386,7 +1441,9 @@ function renderCareLog() {
     btn.addEventListener('click', () => {
       if (viewingHistory) return;
       const key = btn.dataset.careBtn;
-      const [type, subtype] = key.includes('__') ? key.split('__') : [key, null];
+      const sepIdx = key.indexOf('__');
+      const type    = sepIdx >= 0 ? key.slice(0, sepIdx)  : key;
+      const subtype = sepIdx >= 0 ? key.slice(sepIdx + 2) : null;
       if (careFormState && careFormState.type === type && careFormState.subtype === (subtype||null)) {
         careFormState = null;
       } else {
@@ -1463,7 +1520,7 @@ function renderCareLog() {
     b.addEventListener('click', () => { editingCareEntry = null; renderCareLog(); });
   });
 
-  // Wire: delete
+  // Wire: delete log entry
   sec.querySelectorAll('[data-cl-del]').forEach(b => {
     b.addEventListener('click', () => {
       if (!confirm('Delete this care log entry?')) return;
@@ -1476,13 +1533,43 @@ function renderCareLog() {
       scheduleSave();
     });
   });
+
+  // Wire: add custom event type
+  const addCustomBtn = document.getElementById('addCustomEventBtn');
+  if (addCustomBtn) addCustomBtn.addEventListener('click', () => {
+    const name = prompt('Custom event name (e.g. "Eye drops given"):');
+    if (!name || !name.trim()) return;
+    const t = getTemplate();
+    if (t.customCareEvents.find(e => e.name === name.trim())) {
+      alert('A custom event with that name already exists.');
+      return;
+    }
+    const emojiInput = prompt('Emoji for button (leave blank for 📌):');
+    const emoji = (emojiInput && emojiInput.trim()) ? emojiInput.trim() : '📌';
+    t.customCareEvents.push({ name: name.trim(), emoji });
+    renderCareLog();
+    scheduleSave();
+  });
+
+  // Wire: delete custom event type
+  sec.querySelectorAll('[data-del-custom]').forEach(b => {
+    b.addEventListener('click', () => {
+      const name = b.dataset.delCustom;
+      if (!confirm(`Remove the "${name}" button?\n\nPast log entries of this type won't be deleted — only the button will be removed.`)) return;
+      const t = getTemplate();
+      t.customCareEvents = t.customCareEvents.filter(e => e.name !== name);
+      if (careFormState && careFormState.type === 'custom' && careFormState.subtype === name) careFormState = null;
+      renderCareLog();
+      scheduleSave();
+    });
+  });
 }
 
 function tickCareElapsed() {
   const statusEl = document.getElementById('careLogStatus');
   if (statusEl) statusEl.innerHTML = careStatusHtml(currentDate);
-  document.querySelectorAll('.care-elapsed[data-ts]').forEach(el => {
-    el.textContent = fmtElapsed(+el.dataset.ts);
+  document.querySelectorAll('.care-elapsed[data-care-time]').forEach(el => {
+    el.textContent = fmtElapsedFromTime(el.dataset.careTime, el.dataset.careDate || currentDate);
   });
 }
 
