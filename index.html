@@ -208,11 +208,83 @@
   .calendar-day.future{opacity:.3;}
   .calendar-day.today{outline:2px solid #f4b942;}
 
+  /* Care Log */
+  .care-log-section{margin-top:11px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.07);}
+  body.dark .care-log-section{background:#2a3038;}
+  .care-log-status{padding:8px 14px;font-size:11px;color:#888;background:#f9f4ef;border-bottom:1px solid #f0e8e0;line-height:1.8;}
+  body.dark .care-log-status{background:#22272d;color:#9aa6b0;border-bottom-color:#363c44;}
+  .care-log-status b{color:#3d4a3e;font-weight:700;}
+  body.dark .care-log-status b{color:#cdd5dd;}
+  .care-btn-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:10px 12px 8px;}
+  @media(max-width:320px){.care-btn-grid{grid-template-columns:repeat(2,1fr);}}
+  .care-btn{padding:8px 4px;border:1.5px solid #d8e8df;border-radius:20px;background:#f0f7f3;font-size:12px;font-weight:700;color:#4a7a5e;text-align:center;cursor:pointer;line-height:1.3;transition:opacity .15s;}
+  body.dark .care-btn{background:#22312a;border-color:#3a5248;color:#a8d5b5;}
+  .care-btn:active{opacity:.7;}
+  .care-btn.cl-active{background:#5c8a6e;border-color:#5c8a6e;color:#fff;}
+  body.dark .care-btn.cl-active{background:#3d6e52;border-color:#5c8a6e;}
+  .care-btn.cl-open{background:#f4b942;border-color:#f4b942;color:#fff;}
+  body.dark .care-btn.cl-open{background:#7a5e10;border-color:#f4b942;}
+  .care-inline-form{margin:0 12px 10px;background:#f5f9f6;border:1.5px solid #c8e0d4;border-radius:12px;padding:12px;}
+  body.dark .care-inline-form{background:#1e2d26;border-color:#3a5248;}
+  .care-form-title{font-size:13px;font-weight:700;color:#3d4a3e;margin-bottom:10px;}
+  body.dark .care-form-title{color:#e0e6ec;}
+  .care-sub-grid{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+  .care-sub-btn{padding:6px 12px;border:1.5px solid #c8e0d4;border-radius:14px;background:#fff;font-size:12px;font-weight:600;color:#4a7a5e;cursor:pointer;}
+  body.dark .care-sub-btn{background:#22312a;border-color:#3a5248;color:#a8d5b5;}
+  .care-sub-btn.selected{background:#5c8a6e;border-color:#5c8a6e;color:#fff;}
+  .care-form-row{margin-bottom:8px;}
+  .care-form-label{font-size:11px;color:#999;margin-bottom:4px;}
+  body.dark .care-form-label{color:#9aa6b0;}
+  .care-form-input{width:100%;padding:8px 10px;border:1.5px solid #d0e8d8;border-radius:8px;font-size:13px;color:#3d4a3e;background:#fff;}
+  body.dark .care-form-input{background:#22272d;border-color:#3d4751;color:#cdd5dd;}
+  .care-form-input:focus{border-color:#5c8a6e;outline:none;}
+  .care-form-btns{display:flex;gap:8px;margin-top:10px;}
+  .care-confirm-btn{flex:1;padding:9px;background:#5c8a6e;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+  .care-confirm-btn:active{background:#4a7a5e;}
+  .care-cancel-btn{padding:9px 16px;background:transparent;border:1.5px solid #d0c8c0;border-radius:10px;color:#888;font-size:13px;font-weight:600;cursor:pointer;}
+  body.dark .care-cancel-btn{border-color:#4a5560;color:#9aa6b0;}
+  .care-log-viewer{border-top:1px solid #f0e8e0;}
+  body.dark .care-log-viewer{border-top-color:#363c44;}
+  .care-log-toggle{width:100%;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border:none;background:transparent;cursor:pointer;}
+  .care-log-toggle-label{font-size:12px;font-weight:700;color:#5c8a6e;}
+  body.dark .care-log-toggle-label{color:#a8d5b5;}
+  .care-log-list{max-height:280px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 14px 10px;}
+  .care-log-entry{padding:8px 0;border-bottom:1px solid #f5f0eb;display:flex;gap:8px;align-items:flex-start;}
+  body.dark .care-log-entry{border-bottom-color:#363c44;}
+  .care-log-entry:last-child{border-bottom:none;}
+  .care-log-time-col{flex-shrink:0;text-align:right;min-width:36px;}
+  .care-log-time{display:block;font-size:12px;color:#5c8a6e;font-weight:700;}
+  body.dark .care-log-time{color:#a8d5b5;}
+  .care-elapsed{display:block;font-size:10px;color:#bbb;white-space:nowrap;}
+  body.dark .care-elapsed{color:#7a8696;}
+  .care-log-body{flex:1;min-width:0;}
+  .care-log-label{font-size:13px;color:#3d4a3e;}
+  body.dark .care-log-label{color:#cdd5dd;}
+  .care-log-note{font-size:12px;color:#888;margin-top:2px;}
+  body.dark .care-log-note{color:#9aa6b0;}
+  .care-log-actions{display:flex;gap:4px;flex-shrink:0;padding-top:1px;}
+  .cl-edit-btn,.cl-del-btn{background:transparent;border:none;font-size:13px;cursor:pointer;padding:2px 4px;opacity:.55;line-height:1;}
+  .cl-edit-btn:active,.cl-del-btn:active{opacity:1;}
+  .care-log-inline-edit{margin-top:6px;}
+  .cl-inline-input{width:100%;padding:6px 8px;border:1.5px solid #c8e0d4;border-radius:7px;font-size:12px;color:#3d4a3e;background:#fff;}
+  body.dark .cl-inline-input{background:#22272d;border-color:#3d4751;color:#cdd5dd;}
+  .cl-inline-input:focus{border-color:#5c8a6e;outline:none;}
+  .cl-inline-btns{display:flex;gap:6px;margin-top:5px;}
+  .cl-save-btn{padding:5px 12px;background:#5c8a6e;border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;}
+  .cl-save-btn:active{background:#4a7a5e;}
+  .cl-cancel-edit-btn{padding:5px 10px;background:transparent;border:1.5px solid #d0c8c0;border-radius:7px;color:#888;font-size:12px;cursor:pointer;}
+  body.dark .cl-cancel-edit-btn{border-color:#4a5560;color:#9aa6b0;}
+  .care-log-empty{font-size:12px;color:#bbb;text-align:center;padding:14px 0;font-style:italic;}
+  .live-clock{font-size:11px;color:#5c8a6e;font-weight:600;float:right;}
+  body.dark .live-clock{color:#a8d5b5;}
+
   @media print {
     body{background:#fff !important;color:#000 !important;}
     .no-print{display:none !important;}
     .section,.activity-feed,.record-section{box-shadow:none !important;border:1px solid #ddd;break-inside:avoid;}
     .header{background:#5c8a6e !important;-webkit-print-color-adjust:exact;}
+    .care-btn-grid,.care-inline-form,.care-log-toggle{display:none !important;}
+    .care-log-section{box-shadow:none !important;border:1px solid #ddd;break-inside:avoid;}
   }
 </style>
 </head>
@@ -330,6 +402,7 @@
       <div id="activityList" class="activity-list-scroll"></div>
     </div>
 
+    <div id="careLogSection" class="care-log-section"></div>
     <div id="trolleySection" class="section no-print"></div>
     <div id="slotsContainer"></div>
     <div id="addSlotContainer" class="hidden no-print"></div>
@@ -376,6 +449,24 @@ const BASKET    = 'mum-care-v2';
 const EDIT_PIN  = '3939';
 const HISTORY_DAYS_MAX = 366;
 
+const CARE_BUTTONS = [
+  {type:'position', subtype:'straight', icon:'📐', label:'Straight'},
+  {type:'position', subtype:'right',    icon:'➡️', label:'Right'},
+  {type:'position', subtype:'left',     icon:'⬅️', label:'Left'},
+  {type:'sleep',    subtype:'awake',    icon:'👁️', label:'Awake'},
+  {type:'sleep',    subtype:'asleep',   icon:'😴', label:'Asleep'},
+  {type:'bowels',   subtype:null,       icon:'🚽', label:'Bowels'},
+  {type:'eaten',    subtype:null,       icon:'🍽️', label:'Eaten'},
+  {type:'drank',    subtype:null,       icon:'💧', label:'Drank'},
+  {type:'note',     subtype:null,       icon:'📝', label:'Note'},
+];
+
+const CARE_STATE_TYPES = { position: true, sleep: true };
+const CARE_POSITION_SUBS = { straight:{label:'Straight',icon:'📐'}, right:{label:'Right',icon:'➡️'}, left:{label:'Left',icon:'⬅️'} };
+const CARE_SLEEP_SUBS    = { awake:{label:'Awake',icon:'👁️'}, asleep:{label:'Asleep',icon:'😴'} };
+const CARE_BOWEL_SUBS    = { urine:{label:'Urine only'}, excrement:{label:'Excrement only'}, both:{label:'Both'}, neither:{label:'Neither / check only'} };
+const CARE_PLACEHOLDERS  = { eaten:'What and how much…', drank:'What and how much (mls)…', note:'Write a note…' };
+
 const DEF_CARE  = ['Feed mum','Change mum','Offer water','Wipe face & hands','Eyes with cotton pads','Brush teeth','Change position','Exercise'];
 const DEF_HOUSE = ['Ironing','Kitchen tidy','Clean fridge','Vacuum','Empty dust bins','Nappy check'];
 
@@ -408,6 +499,9 @@ let openSections = {};
 let pollTimer = null, blockPollUntil = 0;
 let editMode = false, viewingHistory = false;
 let historyMonth = new Date();
+let careFormState = null;  // { type, subtype, subtypeSelected, noteVal, timeVal, date }
+let careLogOpen = true;
+let editingCareEntry = null;
 
 function pad(n){ return String(n).padStart(2,'0'); }
 function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -514,11 +608,12 @@ function setSyncStatus(status){
 
 function ensureDay(ds) {
   if (!data.days) data.days = {};
-  if (!data.days[ds]) data.days[ds] = { checks:{}, who:{}, records:{food:'',drink:'',nappy:'',supplements:'',supplementsGiven:false,extra:''}, activity:[] };
+  if (!data.days[ds]) data.days[ds] = { checks:{}, who:{}, records:{food:'',drink:'',nappy:'',supplements:'',supplementsGiven:false,extra:''}, activity:[], careLog:[] };
   const d = data.days[ds];
   if (!d.checks) d.checks={}; if (!d.who) d.who={};
   if (!d.records) d.records={food:'',drink:'',nappy:'',supplements:'',supplementsGiven:false,extra:''};
   if (!d.activity) d.activity=[];
+  if (!d.careLog) d.careLog=[];
   return d;
 }
 function getTemplate() {
@@ -592,8 +687,9 @@ function toggleSupplement() {
 
 async function resetCurrentDay() {
   if (viewingHistory) return;
-  if (!confirm(`Reset EVERYTHING for ${fullDate(dateStrToDate(currentDate))}?\n\nClears: all ticks, supplements, all notes, trolley.\nClears for everyone.`)) return;
-  data.days[currentDate] = { checks:{}, who:{}, records:{food:'',drink:'',nappy:'',supplements:'',supplementsGiven:false,extra:''}, activity:[] };
+  if (!confirm(`Reset EVERYTHING for ${fullDate(dateStrToDate(currentDate))}?\n\nClears: all ticks, supplements, all notes, trolley, care log.\nClears for everyone.`)) return;
+  data.days[currentDate] = { checks:{}, who:{}, records:{food:'',drink:'',nappy:'',supplements:'',supplementsGiven:false,extra:''}, activity:[], careLog:[] };
+  careFormState = null; editingCareEntry = null;
   data.trolley = {};
   ['recFood','recDrink','recNappy','recSupplements','recExtra'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
   const whenStr = new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -806,8 +902,27 @@ async function pollTick() {
   const tf = ae && ae.tagName === 'TEXTAREA' ? ae.id : null;
   let saved = null;
   if (tf) saved = ae.value;
+
+  // Capture local careLog entries before wholesale replace, so concurrent edits aren't lost
+  const localCareLogs = {};
+  if (data.days) {
+    Object.keys(data.days).forEach(ds => {
+      if (data.days[ds]?.careLog?.length) localCareLogs[ds] = [...data.days[ds].careLog];
+    });
+  }
+
   data = (fresh && fresh.days) ? fresh : { days:{}, template:null, trolley:fresh?.trolley||{} };
   if (!data.trolley) data.trolley = {};
+
+  // Merge careLog by id — union of remote + any local-only entries
+  Object.keys(localCareLogs).forEach(ds => {
+    if (!data.days?.[ds]) return;
+    const remote = data.days[ds].careLog || [];
+    const remoteIds = new Set(remote.map(e => e.id));
+    const extras = localCareLogs[ds].filter(e => !remoteIds.has(e.id));
+    data.days[ds].careLog = extras.length ? [...remote, ...extras].sort((a,b) => b.ts - a.ts) : remote;
+  });
+
   render();
   if (tf) {
     const r = document.getElementById(tf);
@@ -831,7 +946,7 @@ function render() {
   document.getElementById('resetBtn').style.display = viewingHistory ? 'none' : '';
   document.getElementById('exportBtn2').style.display = viewingHistory ? 'none' : '';
   renderDaySelector(); renderModeToggle(); renderProgress(); renderYesterdayBanner();
-  renderActivity(); renderTrolley(); renderSlots(); renderRecords();
+  renderActivity(); renderCareLog(); renderTrolley(); renderSlots(); renderRecords();
   document.getElementById('recordTitle').textContent = `Daily Record — ${fullDate(dateStrToDate(currentDate))}`;
 }
 
@@ -859,7 +974,7 @@ function renderDaySelector() {
     el.appendChild(btn);
   }
   const wml = document.getElementById('weekMonthLabel');
-  if (wml) wml.textContent = weekMonthLabel();
+  if (wml) wml.innerHTML = `${escapeHtml(weekMonthLabel())} <span class="live-clock" id="liveClock">${fmtHHMM(new Date())}</span>`;
   const btb = document.getElementById('backTodayBtn');
   if (btb) btb.classList.toggle('hidden', currentDate === activeDate);
 }
@@ -968,7 +1083,7 @@ function renderSlots() {
             </div>`:''}
           </div>
         </div>`;
-      }).join('')}${editMode?`<button class="add-task-btn" data-add-task="${escapeAttr(slot.id)}">＋ Add task to ${escapeHtml(slot.time)}</button>`:''}</div>`:''}
+      }).join('')}${editMode?`<button class="add-task-btn" data-add-task="${escapeAttr(slot.id)}">＋ Add task to ${escapeHtml(slot.time)}</button><button class="add-task-btn" style="background:rgba(244,185,66,.08);border-color:#f4b942;color:#9a7510;margin-top:4px;" data-add-all-tasks>＋ Add task to all ${escapeHtml(currentMode)} slots</button>`:''}</div>`:''}
     </div>`;
   }).join('');
 
@@ -987,6 +1102,13 @@ function renderSlots() {
   cont.querySelectorAll('[data-edit-task-slot]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); editTaskName(b.dataset.editTaskSlot, b.dataset.editTaskName); }));
   cont.querySelectorAll('[data-del-task-slot]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); deleteTask(b.dataset.delTaskSlot, b.dataset.delTaskName); }));
   cont.querySelectorAll('[data-add-task]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); addTask(b.dataset.addTask); }));
+  cont.querySelectorAll('[data-add-all-tasks]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const name = prompt(`Task name (will be added to every ${currentMode === 'day' ? 'day' : 'night'} slot):`);
+    if (!name || !name.trim()) return;
+    slotsForMode(currentMode).forEach(s => s.tasks.push(name.trim()));
+    render(); scheduleSave();
+  }));
 
   const addEl = document.getElementById('addSlotContainer');
   if (editMode) {
@@ -1051,6 +1173,320 @@ function renderHistoryCalendar() {
     grid.appendChild(btn);
   }
 }
+
+// ─── Care Log ──────────────────────────────────────────────────────────────
+
+function fmtHHMM(d) { return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+
+function fmtElapsed(ts) {
+  const mins = Math.max(0, Math.floor((Date.now() - ts) / 60000));
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const h = Math.floor(mins / 60), m = mins % 60;
+  return m > 0 ? `${h}h ${m}m ago` : `${h}h ago`;
+}
+
+function ensureCareLog(ds) {
+  const day = ensureDay(ds);
+  if (!day.careLog) day.careLog = [];
+  return day;
+}
+
+function careCurrentState(ds) {
+  const log = data.days?.[ds]?.careLog || [];
+  const sorted = [...log].sort((a, b) => b.ts - a.ts);
+  return {
+    position:   sorted.find(e => e.type === 'position') || null,
+    sleep:      sorted.find(e => e.type === 'sleep')    || null,
+    lastBowels: sorted.find(e => e.type === 'bowels')   || null,
+    lastEaten:  sorted.find(e => e.type === 'eaten')    || null,
+    lastDrank:  sorted.find(e => e.type === 'drank')    || null,
+  };
+}
+
+function careStatusHtml(ds) {
+  const s = careCurrentState(ds);
+  const parts = [];
+
+  if (s.position) {
+    const cfg = CARE_POSITION_SUBS[s.position.subtype] || {};
+    parts.push(`<b>Position:</b> ${escapeHtml(cfg.icon||'')} ${escapeHtml(cfg.label||s.position.subtype)} since ${escapeHtml(s.position.time)} (<span class="care-elapsed" data-ts="${s.position.ts}">${fmtElapsed(s.position.ts)}</span>)`);
+  } else {
+    parts.push('<b>Position:</b> Unknown');
+  }
+
+  if (s.sleep) {
+    const cfg = CARE_SLEEP_SUBS[s.sleep.subtype] || {};
+    parts.push(`${escapeHtml(cfg.icon||'')} <b>${escapeHtml(cfg.label||s.sleep.subtype)}</b> since ${escapeHtml(s.sleep.time)} (<span class="care-elapsed" data-ts="${s.sleep.ts}">${fmtElapsed(s.sleep.ts)}</span>)`);
+  } else {
+    parts.push('<b>Sleep:</b> Unknown');
+  }
+
+  if (s.lastBowels) {
+    const bSub = CARE_BOWEL_SUBS[s.lastBowels.subtype]?.label || s.lastBowels.subtype || '—';
+    parts.push(`<b>Last bowels:</b> ${escapeHtml(s.lastBowels.time)} (${escapeHtml(bSub)}) · <span class="care-elapsed" data-ts="${s.lastBowels.ts}">${fmtElapsed(s.lastBowels.ts)}</span>`);
+  } else {
+    parts.push('<b>Last bowels:</b> Unknown');
+  }
+
+  if (s.lastEaten) {
+    parts.push(`<b>Last eaten:</b> ${escapeHtml(s.lastEaten.time)} (<span class="care-elapsed" data-ts="${s.lastEaten.ts}">${fmtElapsed(s.lastEaten.ts)}</span>)`);
+  } else {
+    parts.push('<b>Last eaten:</b> Unknown');
+  }
+
+  if (s.lastDrank) {
+    parts.push(`<b>Last drank:</b> ${escapeHtml(s.lastDrank.time)} (<span class="care-elapsed" data-ts="${s.lastDrank.ts}">${fmtElapsed(s.lastDrank.ts)}</span>)`);
+  } else {
+    parts.push('<b>Last drank:</b> Unknown');
+  }
+
+  return parts.join(' &thinsp;&middot;&thinsp; ');
+}
+
+function careEventLabel(entry) {
+  if (entry.type === 'position') {
+    const cfg = CARE_POSITION_SUBS[entry.subtype] || {};
+    return `${cfg.icon||'📐'} Position: ${cfg.label||entry.subtype}`;
+  }
+  if (entry.type === 'sleep') {
+    const cfg = CARE_SLEEP_SUBS[entry.subtype] || {};
+    return `${cfg.icon||'👁️'} ${cfg.label||entry.subtype}`;
+  }
+  if (entry.type === 'bowels') {
+    const sub = CARE_BOWEL_SUBS[entry.subtype]?.label || entry.subtype || '';
+    return `🚽 Bowels${sub ? ' — '+sub : ''}`;
+  }
+  const map = { eaten:{icon:'🍽️',label:'Eaten'}, drank:{icon:'💧',label:'Drank'}, note:{icon:'📝',label:'Note'} };
+  const cfg = map[entry.type] || {icon:'❓', label:entry.type};
+  return `${cfg.icon} ${cfg.label}`;
+}
+
+function renderCareLog() {
+  const sec = document.getElementById('careLogSection');
+  if (!sec) return;
+
+  // Clear stale form if date changed
+  if (careFormState && careFormState.date !== currentDate) { careFormState = null; editingCareEntry = null; }
+  if (editingCareEntry) {
+    const day = data.days?.[currentDate];
+    if (!day?.careLog?.find(e => e.id === editingCareEntry)) editingCareEntry = null;
+  }
+
+  const day = ensureCareLog(currentDate);
+  const log = [...(day.careLog || [])].sort((a, b) => b.ts - a.ts);
+  const state = careCurrentState(currentDate);
+
+  // ── Button grid ──
+  const btnsHtml = CARE_BUTTONS.map(btn => {
+    const key = btn.subtype ? `${btn.type}__${btn.subtype}` : btn.type;
+    const isOpen = !!(careFormState && careFormState.type === btn.type && careFormState.subtype === btn.subtype);
+    let cls = 'care-btn';
+    if (isOpen) {
+      cls += ' cl-open';
+    } else if (btn.subtype && CARE_STATE_TYPES[btn.type]) {
+      const cur = state[btn.type];
+      if (cur && cur.subtype === btn.subtype) cls += ' cl-active';
+    }
+    return `<button class="${cls}" data-care-btn="${escapeAttr(key)}">${escapeHtml(btn.icon)}<br/><span style="font-size:10px;">${escapeHtml(btn.label)}</span></button>`;
+  }).join('');
+
+  // ── Inline form ──
+  let formHtml = '';
+  if (careFormState && !viewingHistory) {
+    const fs = careFormState;
+    let title = '';
+    if (fs.type === 'position') {
+      const cfg = CARE_POSITION_SUBS[fs.subtype] || {};
+      title = `${cfg.icon||''} Log: Position ${cfg.label||fs.subtype}`;
+    } else if (fs.type === 'sleep') {
+      const cfg = CARE_SLEEP_SUBS[fs.subtype] || {};
+      title = `${cfg.icon||''} Log: ${cfg.label||fs.subtype}`;
+    } else if (fs.type === 'bowels') {
+      title = '🚽 Log: Bowels';
+    } else {
+      const map = { eaten:{icon:'🍽️',label:'Eaten'}, drank:{icon:'💧',label:'Drank'}, note:{icon:'📝',label:'Note'} };
+      const cfg = map[fs.type] || {icon:'❓', label:fs.type};
+      title = `${cfg.icon} Log: ${cfg.label}`;
+    }
+
+    let subPickHtml = '';
+    if (fs.type === 'bowels') {
+      subPickHtml = `<div class="care-form-row"><div class="care-form-label">What happened?</div><div class="care-sub-grid">${
+        Object.keys(CARE_BOWEL_SUBS).map(k =>
+          `<button class="care-sub-btn${fs.subtypeSelected===k?' selected':''}" data-sub="${escapeAttr(k)}">${escapeHtml(CARE_BOWEL_SUBS[k].label)}</button>`
+        ).join('')
+      }</div></div>`;
+    }
+
+    const placeholder = CARE_PLACEHOLDERS[fs.type] || 'Optional note…';
+    formHtml = `<div class="care-inline-form">
+      <div class="care-form-title">${escapeHtml(title)}</div>
+      ${subPickHtml}
+      <div class="care-form-row"><div class="care-form-label">Note (optional)</div>
+        <input type="text" class="care-form-input" id="careFormNote" placeholder="${escapeAttr(placeholder)}" value="${escapeAttr(fs.noteVal||'')}" maxlength="200"/>
+      </div>
+      <div class="care-form-row"><div class="care-form-label">Time</div>
+        <input type="time" class="care-form-input" id="careFormTime" value="${escapeAttr(fs.timeVal||fmtHHMM(new Date()))}"/>
+      </div>
+      <div class="care-form-btns">
+        <button class="care-confirm-btn" id="careConfirmBtn">✓ Confirm</button>
+        <button class="care-cancel-btn" id="careCancelBtn">Cancel</button>
+      </div>
+    </div>`;
+  }
+
+  // ── Log entries ──
+  let logListHtml = '';
+  if (!log.length) {
+    logListHtml = '<div class="care-log-empty">No events logged yet for this care day.</div>';
+  } else {
+    logListHtml = log.map(entry => {
+      const label = careEventLabel(entry);
+      const editing = editingCareEntry === entry.id;
+      return `<div class="care-log-entry">
+        <div class="care-log-time-col">
+          <span class="care-log-time">${escapeHtml(entry.time||'')}</span>
+          <span class="care-elapsed" data-ts="${entry.ts}">${fmtElapsed(entry.ts)}</span>
+        </div>
+        <div class="care-log-body">
+          <div class="care-log-label">${escapeHtml(label)}</div>
+          ${entry.note && !editing ? `<div class="care-log-note">${escapeHtml(entry.note)}</div>` : ''}
+          ${editing ? `<div class="care-log-inline-edit">
+            <input type="text" class="cl-inline-input" id="clEditInput_${escapeAttr(entry.id)}" value="${escapeAttr(entry.note||'')}" placeholder="Note…" maxlength="200"/>
+            <div class="cl-inline-btns">
+              <button class="cl-save-btn" data-cl-save="${escapeAttr(entry.id)}">Save</button>
+              <button class="cl-cancel-edit-btn" data-cl-cancel-edit>Cancel</button>
+            </div>
+          </div>` : ''}
+        </div>
+        ${!viewingHistory ? `<div class="care-log-actions">
+          <button class="cl-edit-btn" data-cl-edit="${escapeAttr(entry.id)}" title="Edit note">✏️</button>
+          <button class="cl-del-btn" data-cl-del="${escapeAttr(entry.id)}" title="Delete">🗑️</button>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  sec.innerHTML = `
+    <div class="care-log-status" id="careLogStatus">${careStatusHtml(currentDate)}</div>
+    ${!viewingHistory ? `<div class="care-btn-grid">${btnsHtml}</div>` : ''}
+    ${formHtml}
+    <div class="care-log-viewer">
+      <button class="care-log-toggle" id="careLogToggle">
+        <span class="care-log-toggle-label">📋 Care Log — ${escapeHtml(fullDate(dateStrToDate(currentDate)))}</span>
+        <span class="chev">${careLogOpen ? '▲' : '▼'}</span>
+      </button>
+      ${careLogOpen ? `<div class="care-log-list">${logListHtml}</div>` : ''}
+    </div>
+  `;
+
+  // Wire: care buttons
+  sec.querySelectorAll('[data-care-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (viewingHistory) return;
+      const key = btn.dataset.careBtn;
+      const [type, subtype] = key.includes('__') ? key.split('__') : [key, null];
+      if (careFormState && careFormState.type === type && careFormState.subtype === (subtype||null)) {
+        careFormState = null;
+      } else {
+        careFormState = { type, subtype: subtype||null, subtypeSelected: null, noteVal: '', timeVal: fmtHHMM(new Date()), date: currentDate };
+        blockPollUntil = Date.now() + 60000;
+      }
+      renderCareLog();
+    });
+  });
+
+  // Wire: bowel sub-option buttons
+  sec.querySelectorAll('[data-sub]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (careFormState) { careFormState.subtypeSelected = b.dataset.sub; renderCareLog(); }
+    });
+  });
+
+  // Keep typed values in careFormState so re-renders don't lose them
+  const noteEl = document.getElementById('careFormNote');
+  const timeEl = document.getElementById('careFormTime');
+  if (noteEl) noteEl.addEventListener('input', () => { if (careFormState) careFormState.noteVal = noteEl.value; });
+  if (timeEl) timeEl.addEventListener('change', () => { if (careFormState) careFormState.timeVal = timeEl.value; });
+
+  // Wire: Confirm
+  const confirmBtn = document.getElementById('careConfirmBtn');
+  if (confirmBtn) confirmBtn.addEventListener('click', () => {
+    const fs = careFormState;
+    if (!fs) return;
+    if (fs.type === 'bowels' && !fs.subtypeSelected) { alert('Please select what happened.'); return; }
+    const note = document.getElementById('careFormNote')?.value?.trim() || '';
+    const time = document.getElementById('careFormTime')?.value || fmtHHMM(new Date());
+    const subtype = fs.type === 'bowels' ? fs.subtypeSelected : (fs.subtype || null);
+    const entry = { id:'cl_'+Date.now()+'_'+Math.random().toString(36).slice(2,6), type:fs.type, subtype, note, time, ts:Date.now() };
+    ensureCareLog(currentDate).careLog.push(entry);
+    careFormState = null;
+    blockPollUntil = Date.now() + 10000;
+    renderCareLog();
+    scheduleSave();
+  });
+
+  // Wire: Cancel
+  const cancelBtn = document.getElementById('careCancelBtn');
+  if (cancelBtn) cancelBtn.addEventListener('click', () => { careFormState = null; renderCareLog(); });
+
+  // Wire: log toggle
+  const toggleBtn = document.getElementById('careLogToggle');
+  if (toggleBtn) toggleBtn.addEventListener('click', () => { careLogOpen = !careLogOpen; renderCareLog(); });
+
+  // Wire: edit note buttons
+  sec.querySelectorAll('[data-cl-edit]').forEach(b => {
+    b.addEventListener('click', () => {
+      editingCareEntry = editingCareEntry === b.dataset.clEdit ? null : b.dataset.clEdit;
+      renderCareLog();
+    });
+  });
+
+  // Wire: save inline edit
+  sec.querySelectorAll('[data-cl-save]').forEach(b => {
+    b.addEventListener('click', () => {
+      const id = b.dataset.clSave;
+      const inp = document.getElementById(`clEditInput_${id}`);
+      if (!inp) return;
+      const entry = ensureCareLog(currentDate).careLog.find(e => e.id === id);
+      if (entry) entry.note = inp.value.trim();
+      editingCareEntry = null;
+      blockPollUntil = Date.now() + 10000;
+      renderCareLog();
+      scheduleSave();
+    });
+  });
+
+  // Wire: cancel inline edit
+  sec.querySelectorAll('[data-cl-cancel-edit]').forEach(b => {
+    b.addEventListener('click', () => { editingCareEntry = null; renderCareLog(); });
+  });
+
+  // Wire: delete
+  sec.querySelectorAll('[data-cl-del]').forEach(b => {
+    b.addEventListener('click', () => {
+      if (!confirm('Delete this care log entry?')) return;
+      const id = b.dataset.clDel;
+      const day = ensureCareLog(currentDate);
+      day.careLog = day.careLog.filter(e => e.id !== id);
+      if (editingCareEntry === id) editingCareEntry = null;
+      blockPollUntil = Date.now() + 10000;
+      renderCareLog();
+      scheduleSave();
+    });
+  });
+}
+
+function tickCareElapsed() {
+  const statusEl = document.getElementById('careLogStatus');
+  if (statusEl) statusEl.innerHTML = careStatusHtml(currentDate);
+  document.querySelectorAll('.care-elapsed[data-ts]').forEach(el => {
+    el.textContent = fmtElapsed(+el.dataset.ts);
+  });
+}
+
+// ───────────────────────────────────────────────────────────────────────────
 
 window.addEventListener('load', async () => {
   if (!PANTRY_ID || PANTRY_ID === 'UNCONFIGURED_PLACEHOLDER' || PANTRY_ID.length < 10) {
@@ -1140,6 +1576,8 @@ function enterApp() {
   }, 30000);
 
   startPolling();
+  setInterval(tickCareElapsed, 60000);
+  setInterval(() => { const cl = document.getElementById('liveClock'); if (cl) cl.textContent = fmtHHMM(new Date()); }, 30000);
 }
 
 function tryPin() {
