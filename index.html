@@ -252,14 +252,13 @@
   .care-log-entry{padding:8px 0;border-bottom:1px solid #f5f0eb;display:flex;gap:8px;align-items:flex-start;}
   body.dark .care-log-entry{border-bottom-color:#363c44;}
   .care-log-entry:last-child{border-bottom:none;}
-  .care-log-time-col{flex-shrink:0;text-align:right;min-width:36px;}
-  .care-log-time{display:block;font-size:12px;color:#5c8a6e;font-weight:700;}
-  body.dark .care-log-time{color:#a8d5b5;}
-  .care-elapsed{display:block;font-size:10px;color:#bbb;white-space:nowrap;}
+  .care-elapsed{display:inline;font-size:10px;color:#bbb;white-space:nowrap;margin-left:5px;}
   body.dark .care-elapsed{color:#7a8696;}
   .care-log-body{flex:1;min-width:0;}
   .care-log-label{font-size:13px;color:#3d4a3e;}
   body.dark .care-log-label{color:#cdd5dd;}
+  .care-log-recorded{font-size:11px;color:#bbb;margin-top:1px;}
+  body.dark .care-log-recorded{color:#7a8696;}
   .care-log-note{font-size:12px;color:#888;margin-top:2px;}
   body.dark .care-log-note{color:#9aa6b0;}
   .care-log-actions{display:flex;gap:4px;flex-shrink:0;padding-top:1px;}
@@ -1383,12 +1382,9 @@ function renderCareLog() {
       const label = careEventLabel(entry);
       const editing = editingCareEntry === entry.id;
       return `<div class="care-log-entry">
-        <div class="care-log-time-col">
-          <span class="care-log-time">${escapeHtml(entry.time||'')}</span>
-          ${elapsedSpan(entry.time, currentDate)}
-        </div>
         <div class="care-log-body">
-          <div class="care-log-label">${escapeHtml(label)}</div>
+          <div class="care-log-label">${escapeHtml(label)}${elapsedSpan(entry.time, currentDate)}</div>
+          <div class="care-log-recorded">Recorded @ ${escapeHtml(entry.time||'')}</div>
           ${entry.note && !editing ? `<div class="care-log-note">${escapeHtml(entry.note)}</div>` : ''}
           ${editing ? `<div class="care-log-inline-edit">
             <input type="text" class="cl-inline-input" id="clEditInput_${escapeAttr(entry.id)}" value="${escapeAttr(entry.note||'')}" placeholder="Note…" maxlength="200"/>
