@@ -891,6 +891,81 @@ function exportDay() {
     columnStyles: {0:{cellWidth:16},1:{cellWidth:26},2:{cellWidth:20},3:{cellWidth:'auto'}},
     theme: 'plain',
   });
+  y = doc.lastAutoTable.finalY + 6;
+
+  // Care Log
+  const careLog = day.careLog || [];
+  if (careLog.length) {
+    const careEventLabelPdf = entry => {
+      if (entry.type === 'position') {
+        const cfg = CARE_POSITION_SUBS[entry.subtype] || {};
+        return `Position: ${cfg.label||entry.subtype}`;
+      }
+      if (entry.type === 'sleep') {
+        return (CARE_SLEEP_SUBS[entry.subtype] || {}).label || entry.subtype;
+      }
+      if (entry.type === 'bowels') {
+        const sub = CARE_BOWEL_SUBS[entry.subtype]?.label || entry.subtype || '';
+        return `Bowels${sub ? ' — '+sub : ''}`;
+      }
+      if (entry.type === 'custom') return entry.subtype || 'Custom event';
+      return {eaten:'Eaten', drank:'Drank', note:'Note'}[entry.type] || entry.type;
+    };
+
+    const clStatusVal = (entry, type) => {
+      if (!entry) return 'Unknown';
+      if (type === 'position') {
+        return `${(CARE_POSITION_SUBS[entry.subtype]||{}).label||entry.subtype} since ${entry.time}`;
+      }
+      if (type === 'sleep') {
+        return `${(CARE_SLEEP_SUBS[entry.subtype]||{}).label||entry.subtype} since ${entry.time}`;
+      }
+      if (type === 'bowels') {
+        const sub = CARE_BOWEL_SUBS[entry.subtype]?.label || entry.subtype || '';
+        return `${entry.time}${sub ? ' — '+sub : ''}`;
+      }
+      return `${entry.time}${entry.note ? ' — '+entry.note : ''}`;
+    };
+
+    sectionTitle('Care Log', 80, 120, 115);
+
+    const cls = careCurrentState(currentDate);
+    doc.autoTable({
+      startY: y,
+      head: [['Field','Last known state at time of export']],
+      body: [
+        ['Position',    clStatusVal(cls.position,   'position')],
+        ['Sleep',       clStatusVal(cls.sleep,       'sleep')],
+        ['Last bowels', clStatusVal(cls.lastBowels,  'bowels')],
+        ['Last eaten',  clStatusVal(cls.lastEaten,   'eaten')],
+        ['Last drank',  clStatusVal(cls.lastDrank,   'drank')],
+      ],
+      margin: {left:mg, right:mg},
+      headStyles: {fillColor:[220,235,225], textColor:[40,80,55], fontStyle:'bold', fontSize:9},
+      bodyStyles: {fontSize:9},
+      alternateRowStyles: {fillColor:[248,252,250]},
+      columnStyles: {0:{cellWidth:28, fontStyle:'bold'}, 1:{cellWidth:'auto'}},
+      theme: 'plain',
+    });
+    y = doc.lastAutoTable.finalY + 6;
+
+    const clRows = [...careLog].sort((a,b) => a.ts - b.ts).map(entry => {
+      const recAt = new Date(entry.ts);
+      const recTime = `${pad(recAt.getHours())}:${pad(recAt.getMinutes())}`;
+      return [entry.time||'', recTime, careEventLabelPdf(entry), entry.note||''];
+    });
+    doc.autoTable({
+      startY: y,
+      head: [['Time','Recorded at','Event','Note']],
+      body: clRows,
+      margin: {left:mg, right:mg},
+      headStyles: {fillColor:[220,235,225], textColor:[40,80,55], fontStyle:'bold', fontSize:9},
+      bodyStyles: {fontSize:9},
+      alternateRowStyles: {fillColor:[248,252,250]},
+      columnStyles: {0:{cellWidth:14},1:{cellWidth:22},2:{cellWidth:52},3:{cellWidth:'auto'}},
+      theme: 'plain',
+    });
+  }
 
   const total = doc.internal.getNumberOfPages();
   for (let i = 1; i <= total; i++) {
