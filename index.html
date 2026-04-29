@@ -1270,15 +1270,24 @@ function fmtElapsed(ts) {
   return m > 0 ? `${h}h ${m}m ago` : `${h}h ago`;
 }
 
-function fmtElapsedFromTime(timeStr, dateStr) {
-  if (!timeStr || !dateStr) return '';
+function fmtElapsedFromTime(timeStr, anchorTs) {
+  if (!timeStr || !anchorTs) return '';
   const [hh, mm] = timeStr.split(':').map(Number);
   if (isNaN(hh) || isNaN(mm)) return '';
-  const [y, mo, d] = dateStr.split('-').map(Number);
-  let ref = new Date(y, mo - 1, d, hh, mm, 0, 0);
-  // If the resulting moment is in the future the event belongs to the previous calendar day
-  // (e.g. a 23:30 night-shift entry viewed the next morning)
-  if (ref > new Date()) ref = new Date(ref.getTime() - 86400000);
+  // Place HH:MM on the calendar day before, same day, and day after anchorTs,
+  // then pick whichever candidate is closest to anchorTs. This handles same-day
+  // entries, after-midnight night shift entries stored under the previous care day,
+  // and after-the-fact entries without needing the care day date at all.
+  const anchor = new Date(anchorTs);
+  const candidates = [-1, 0, 1].map(offset => {
+    const d = new Date(anchor);
+    d.setDate(d.getDate() + offset);
+    d.setHours(hh, mm, 0, 0);
+    return d;
+  });
+  const ref = candidates.reduce((best, c) =>
+    Math.abs(c - anchor) < Math.abs(best - anchor) ? c : best
+  );
   return fmtElapsed(ref.getTime());
 }
 
@@ -1300,8 +1309,8 @@ function careCurrentState(ds) {
   };
 }
 
-function elapsedSpan(timeStr, dateStr) {
-  return `<span class="care-elapsed" data-care-time="${escapeAttr(timeStr||'')}" data-care-date="${escapeAttr(dateStr||'')}">${fmtElapsedFromTime(timeStr, dateStr)}</span>`;
+function elapsedSpan(timeStr, anchorTs) {
+  return `<span class="care-elapsed" data-care-time="${escapeAttr(timeStr||'')}" data-care-ts="${escapeAttr(String(anchorTs||''))}">${fmtElapsedFromTime(timeStr, anchorTs)}</span>`;
 }
 
 function careStatusHtml(ds) {
@@ -1310,33 +1319,33 @@ function careStatusHtml(ds) {
 
   if (s.position) {
     const cfg = CARE_POSITION_SUBS[s.position.subtype] || {};
-    parts.push(`<b>Position:</b> ${escapeHtml(cfg.icon||'')} ${escapeHtml(cfg.label||s.position.subtype)} since ${escapeHtml(s.position.time)} (${elapsedSpan(s.position.time, ds)})`);
+    parts.push(`<b>Position:</b> ${escapeHtml(cfg.icon||'')} ${escapeHtml(cfg.label||s.position.subtype)} since ${escapeHtml(s.position.time)} (${elapsedSpan(s.position.time, s.position.ts)})`);
   } else {
     parts.push('<b>Position:</b> Unknown');
   }
 
   if (s.sleep) {
     const cfg = CARE_SLEEP_SUBS[s.sleep.subtype] || {};
-    parts.push(`${escapeHtml(cfg.icon||'')} <b>${escapeHtml(cfg.label||s.sleep.subtype)}</b> since ${escapeHtml(s.sleep.time)} (${elapsedSpan(s.sleep.time, ds)})`);
+    parts.push(`${escapeHtml(cfg.icon||'')} <b>${escapeHtml(cfg.label||s.sleep.subtype)}</b> since ${escapeHtml(s.sleep.time)} (${elapsedSpan(s.sleep.time, s.sleep.ts)})`);
   } else {
     parts.push('<b>Sleep:</b> Unknown');
   }
 
   if (s.lastBowels) {
     const bSub = CARE_BOWEL_SUBS[s.lastBowels.subtype]?.label || s.lastBowels.subtype || '—';
-    parts.push(`<b>Last bowels:</b> ${escapeHtml(s.lastBowels.time)} (${escapeHtml(bSub)}) · ${elapsedSpan(s.lastBowels.time, ds)}`);
+    parts.push(`<b>Last bowels:</b> ${escapeHtml(s.lastBowels.time)} (${escapeHtml(bSub)}) · ${elapsedSpan(s.lastBowels.time, s.lastBowels.ts)}`);
   } else {
     parts.push('<b>Last bowels:</b> Unknown');
   }
 
   if (s.lastEaten) {
-    parts.push(`<b>Last eaten:</b> ${escapeHtml(s.lastEaten.time)} (${elapsedSpan(s.lastEaten.time, ds)})`);
+    parts.push(`<b>Last eaten:</b> ${escapeHtml(s.lastEaten.time)} (${elapsedSpan(s.lastEaten.time, s.lastEaten.ts)})`);
   } else {
     parts.push('<b>Last eaten:</b> Unknown');
   }
 
   if (s.lastDrank) {
-    parts.push(`<b>Last drank:</b> ${escapeHtml(s.lastDrank.time)} (${elapsedSpan(s.lastDrank.time, ds)})`);
+    parts.push(`<b>Last drank:</b> ${escapeHtml(s.lastDrank.time)} (${elapsedSpan(s.lastDrank.time, s.lastDrank.ts)})`);
   } else {
     parts.push('<b>Last drank:</b> Unknown');
   }
@@ -1458,7 +1467,7 @@ function renderCareLog() {
       const editing = editingCareEntry === entry.id;
       return `<div class="care-log-entry">
         <div class="care-log-body">
-          <div class="care-log-label">${escapeHtml(label)}${elapsedSpan(entry.time, currentDate)}</div>
+          <div class="care-log-label">${escapeHtml(label)}${elapsedSpan(entry.time, entry.ts)}</div>
           <div class="care-log-recorded">Recorded @ ${escapeHtml(entry.time||'')}</div>
           ${entry.note && !editing ? `<div class="care-log-note">${escapeHtml(entry.note)}</div>` : ''}
           ${editing ? `<div class="care-log-inline-edit">
@@ -1640,7 +1649,7 @@ function tickCareElapsed() {
   const statusEl = document.getElementById('careLogStatus');
   if (statusEl) statusEl.innerHTML = careStatusHtml(currentDate);
   document.querySelectorAll('.care-elapsed[data-care-time]').forEach(el => {
-    el.textContent = fmtElapsedFromTime(el.dataset.careTime, el.dataset.careDate || currentDate);
+    el.textContent = fmtElapsedFromTime(el.dataset.careTime, +el.dataset.careTs || 0);
   });
 }
 
